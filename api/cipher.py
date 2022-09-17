@@ -5,7 +5,6 @@ class handler(BaseHTTPRequestHandler):
 
   def do_GET(self):
     print(self.headers)
-    print(post_data)
     self.send_response(200)
     self.send_header('Content-type', 'text/plain')
     self.end_headers()

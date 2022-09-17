@@ -16,5 +16,4 @@ class handler(BaseHTTPRequestHandler):
       post_data = self.rfile.read(content_length) # <--- Gets the data itself
       print("POST request,\nPath: {}\nHeaders:\n{}\n\nBody:\n{}\n".format(str(self.path), str(self.headers), post_data.decode('utf-8')))
 
-      self._set_response()
       self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))

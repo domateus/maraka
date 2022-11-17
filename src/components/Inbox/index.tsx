@@ -8,7 +8,7 @@ const user = "Maraka";
 
 const Inbox = () => {
   const [socket, setSocket] =
-    useState<Socket<DefaultEventsMap, DefaultEventsMap>>(null);
+    useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState("");
 
@@ -24,6 +24,7 @@ const Inbox = () => {
   }, [socket]);
 
   const sendMessage = () => {
+    if (!socket) return;
     setMessages((messages) => [
       ...messages,
       { author: user, text: message, id: 42 },
@@ -69,6 +70,7 @@ const Inbox = () => {
       </S.InputContainer>
       <button
         onClick={() => {
+          if (!socket) return;
           socket.emit("users", "a");
         }}
       >

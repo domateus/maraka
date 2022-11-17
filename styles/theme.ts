@@ -10,6 +10,10 @@ export type MarakaTheme = {
     octonary?: string;
     nonary?: string;
     denary?: string;
+    myMessage?: string;
+    theirMessage?: string;
+    myMessageColor?: string;
+    theirMessageColor?: string;
   };
   fonts?: {
     primary?: string;
@@ -74,6 +78,10 @@ export const darkTheme: MarakaTheme = {
     octonary: "#616161",
     nonary: "#424242",
     denary: "#212121",
+    myMessage: "#248bf5",
+    theirMessage: "#e5e5ea",
+    myMessageColor: "#E0E0E0",
+    theirMessageColor: "#424242",
   },
   fonts: {
     primary: "Roboto, sans-serif",
@@ -138,6 +146,10 @@ export const lightTheme: MarakaTheme = {
     octonary: "#BDBDBD",
     nonary: "#E0E0E0",
     denary: "#F5F5F5",
+    myMessage: "#248bf5",
+    theirMessage: "#e5e5ea",
+    myMessageColor: "#E0E0E0",
+    theirMessageColor: "#424242",
   },
   fonts: {
     primary: "Roboto, sans-serif",

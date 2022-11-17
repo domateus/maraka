@@ -4,8 +4,8 @@ from datetime import datetime
 class handler(BaseHTTPRequestHandler):
 
   def do_GET(self):
-    content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
-    post_data = self.rfile.read(content_length) # <--- Gets the data itself
+    content_length = int(self.headers['Content-Length']) 
+    post_data = self.rfile.read(content_length) 
     print("GET request,\nPath: {}\nHeaders:\n{}\n\nBody:\n{}\n".format(str(self.path), str(self.headers), post_data.decode('utf-8')))   
     self.send_response(200)
     self.send_header('Content-type', 'text/plain')
@@ -14,8 +14,8 @@ class handler(BaseHTTPRequestHandler):
     return
   
   def do_POST(self):
-    content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
-    post_data = self.rfile.read(content_length) # <--- Gets the data itself
+    content_length = int(self.headers['Content-Length']) 
+    post_data = self.rfile.read(content_length) 
     print("POST request,\nPath: {}\nHeaders:\n{}\n\nBody:\n{}\n".format(str(self.path), str(self.headers), post_data.decode('utf-8')))
     self.send_response(200)
     self.send_header('Content-type', 'text/html')

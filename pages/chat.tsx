@@ -26,7 +26,7 @@ const Chat: React.FC = () => {
       dispatch(sessionActions.setUser(""));
     } else {
       dispatch(sessionActions.defineName());
-      socket.emit("add", user);
+      socket.emit("add", "maraka" + user);
     }
   };
 

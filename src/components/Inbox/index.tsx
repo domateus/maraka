@@ -1,35 +1,38 @@
+import { gotUnreadMessages } from "@context/contacts";
+import { push } from "@context/messages";
+import { RootState } from "@context/store";
+import { uuidv4 } from "@utils";
 import { useEffect, useState } from "react";
 import { FiSend } from "react-icons/fi";
-import io, { Socket } from "socket.io-client";
+import { useDispatch, useSelector } from "react-redux";
+import { Socket } from "socket.io-client";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import * as S from "./styles";
 
-const user = "Maraka";
+const Inbox = ({
+  socket,
+}: {
+  socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+}) => {
+  const dispatch = useDispatch();
 
-const Inbox = () => {
-  const [socket, setSocket] =
-    useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { messages } = useSelector((state: RootState) => state.messages);
+  const { user, userToChat } = useSelector((state: RootState) => state.session);
+
+  console.log("messages", messages);
+
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    !socket && setSocket(io("ws://localhost:5000"));
-    socket &&
-      socket.on("message", (message: Message) => {
-        console.log(message);
-        setMessages((messages) => [...messages, message]);
-      });
-
-    socket && socket.on("users", (a) => console.log("sd", a));
-  }, [socket]);
-
   const sendMessage = () => {
-    if (!socket) return;
-    setMessages((messages) => [
-      ...messages,
-      { author: user, text: message, id: 42 },
-    ]);
-    socket.emit("message", message);
+    if (!socket || !user) return;
+    const newMessage = {
+      id: uuidv4(),
+      from: user,
+      text: message,
+      channel: userToChat,
+    };
+    dispatch(push(newMessage));
+    socket.emit("send-message", { from: user, to: userToChat, text: message });
     setMessage("");
   };
 
@@ -39,19 +42,33 @@ const Inbox = () => {
     }
   };
 
+  useEffect(() => {
+    socket.on("receive-message", (message: Message) => {
+      dispatch(push({ ...message, channel: message.from }));
+      if (message.from !== userToChat) {
+        dispatch(gotUnreadMessages(message.from));
+      }
+    });
+    return () => {
+      socket.off("receive-message");
+    };
+  }, [dispatch, socket, user, userToChat]);
+
+  if (!userToChat) return <div></div>;
+
   return (
     <div>
       <S.Messages>
-        {messages.map((message, index) =>
-          message.author === user ? (
-            <S.MyMessage key={index}>
-              <div>{message.author}</div>
-              <div>{message.text}</div>
+        {(messages[userToChat] || []).map(({ id, from, text }) =>
+          from === user ? (
+            <S.MyMessage key={id}>
+              <div>{from}</div>
+              <div>{text}</div>
             </S.MyMessage>
           ) : (
-            <S.TheirMessage key={index}>
-              <div>{message.author}</div>
-              <div>{message.text}</div>
+            <S.TheirMessage key={id}>
+              <div>{from}</div>
+              <div>{text}</div>
             </S.TheirMessage>
           )
         )}
@@ -68,14 +85,6 @@ const Inbox = () => {
           <FiSend color="black" />
         </S.SendButton>
       </S.InputContainer>
-      <button
-        onClick={() => {
-          if (!socket) return;
-          socket.emit("users", "a");
-        }}
-      >
-        asdfasdf
-      </button>
     </div>
   );
 };

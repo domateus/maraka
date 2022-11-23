@@ -1,13 +1,12 @@
 type Message = {
-  id: number;
+  id: string;
   text: string;
+  from: string;
 
   // Optional fields
-  author?: string;
   timestamp?: number;
 
   // Optional fields with default values
-  isRead?: boolean;
   isDeleted?: boolean;
 
   // Optional fields with default values and type assertions
@@ -19,4 +18,5 @@ type Contact = {
   id: number;
   name: string;
   email: string;
+  hasUnreadMessages: boolean;
 };

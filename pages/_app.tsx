@@ -1,32 +1,22 @@
+import { RootState, store, wrapper } from "@/context/store";
 import type { AppProps } from "next/app";
-import { useState } from "react";
+import { Provider, useSelector } from "react-redux";
 import { ThemeProvider } from "styled-components";
-import { Context } from "../src/context";
+import { darkTheme, lightTheme } from "styles/theme";
 import GlobalStyles from "../styles/globals";
-import { darkTheme, lightTheme } from "../styles/theme";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const [context, setContext] = useState({ theme: "light" });
-
-  const toggleTheme = () => {
-    setContext((prev) => ({
-      ...prev,
-      theme: context.theme === "light" ? "dark" : "light",
-    }));
-  };
-
+  const { theme } = useSelector((state: RootState) => state.session);
   return (
     <>
-      <Context.Provider value={{ theme: context.theme, toggleTheme }}>
-        <ThemeProvider
-          theme={context.theme === "light" ? lightTheme : darkTheme}
-        >
+      <Provider store={store}>
+        <ThemeProvider theme={theme === "light" ? lightTheme : darkTheme}>
           <Component {...pageProps} />
           <GlobalStyles />
         </ThemeProvider>
-      </Context.Provider>
+      </Provider>
     </>
   );
 }
 
-export default MyApp;
+export default wrapper.withRedux(MyApp);

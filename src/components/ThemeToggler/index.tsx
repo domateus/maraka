@@ -1,10 +1,15 @@
-import { useContext } from "react";
-import { Context } from "../../context";
+import { toggleTheme } from "@context/session";
+import { RootState } from "@context/store";
+import { useDispatch, useSelector } from "react-redux";
 
 const ThemeToggle = () => {
-  const { theme, toggleTheme } = useContext(Context);
+  const dispatch = useDispatch();
+
+  const { theme } = useSelector((state: RootState) => state.session);
   return (
-    <button onClick={toggleTheme}>{theme === "light" ? "🔦" : "💡"}</button>
+    <button onClick={() => dispatch(toggleTheme())}>
+      {theme === "light" ? "🔦" : "💡"}
+    </button>
   );
 };
 

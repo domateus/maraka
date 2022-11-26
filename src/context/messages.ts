@@ -1,9 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { uuidv4 } from "../utils";
 
 export interface MessageState {
   messages: {
-    [key: string]: Message[];
+    [key: string]: Message<TextPayload>[];
   };
 }
 
@@ -15,11 +14,13 @@ export const messageSlice = createSlice({
   name: "message",
   initialState,
   reducers: {
-    push: (state, action: PayloadAction<Message & { channel: string }>) => {
-      const { from, channel, text } = action.payload;
+    push: (
+      state,
+      action: PayloadAction<Message<TextPayload> & { channel: string }>
+    ) => {
+      const { channel } = action.payload;
       const messages = state.messages[channel] || [];
-      const message = { from, text, id: uuidv4() };
-      console.log("push", message);
+      const message: Message<TextPayload> = action.payload;
       messages.push(message);
       state.messages[channel] = messages;
     },

@@ -9,8 +9,9 @@ import Inbox from "../src/components/Inbox";
 import ThemeToggler from "../src/components/ThemeToggler";
 import { RootState } from "../src/context/store";
 import * as S from "../styles/pages/chat";
+//"http://fast-chamber-80133.herokuapp.com/"
 
-const socket = io("http://fast-chamber-80133.herokuapp.com/");
+const socket = io("http://fast-chamber-80133.herokuapp.com");
 
 const Chat: React.FC = () => {
   const dispatch = useDispatch();
@@ -24,6 +25,9 @@ const Chat: React.FC = () => {
     if (contacts.find((c) => c.name === user)) {
       alert("Name already taken");
       dispatch(sessionActions.setUser(""));
+    } else if (user.length > 14) {
+      alert("Username is too long, max us 14 caracters");
+      return;
     } else {
       dispatch(sessionActions.defineName());
       socket.emit("add", user);
@@ -61,11 +65,11 @@ const Chat: React.FC = () => {
           autoFocus
           value={user}
           onChange={(e) => dispatch(sessionActions.setUser(e.target.value))}
-          onBlur={pickName}
           onKeyDown={(e) => {
             if (e.key === "Enter") pickName();
           }}
         />
+        {user.length} / 14
       </S.Container>
     );
   }
@@ -80,8 +84,7 @@ const Chat: React.FC = () => {
   return (
     <S.Container>
       <S.Header theme={theme}>
-        <h1>Chat page ─ {user}</h1>
-        <button onClick={() => socket.emit("remove", user)}>Disconnect</button>
+        <h1>{user}</h1>
         <ThemeToggler />
       </S.Header>
       <S.Chat>

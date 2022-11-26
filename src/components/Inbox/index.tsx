@@ -1,7 +1,7 @@
 import ChatInput from "@components/ChatInput";
 import Messages from "@components/Messages";
 import { commandSet, tell } from "@context/command";
-import { gotUnreadMessages } from "@context/contacts";
+import { canScrollToNewMessages, gotUnreadMessages } from "@context/contacts";
 import { push } from "@context/messages";
 import { RootState } from "@context/store";
 import { uuidv4 } from "@utils";
@@ -52,7 +52,7 @@ const Inbox = ({
       if (message.from !== userToChat) {
         dispatch(gotUnreadMessages(message.from));
       } else {
-        dispatch(tell({ targetId: message.id, name: commandSet.SCROLL_DOWN }));
+        dispatch(canScrollToNewMessages(message.from));
       }
     },
     [dispatch, userToChat]

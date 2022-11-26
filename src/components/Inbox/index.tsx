@@ -51,6 +51,8 @@ const Inbox = ({
       dispatch(push({ ...message, channel: message.from }));
       if (message.from !== userToChat) {
         dispatch(gotUnreadMessages(message.from));
+      } else {
+        dispatch(tell({ targetId: message.id, name: commandSet.SCROLL_DOWN }));
       }
     },
     [dispatch, userToChat]

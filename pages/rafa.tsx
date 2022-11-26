@@ -2,6 +2,7 @@ import * as caesarCipher from "@cipher/caesarCipher"
 import * as monoalphabeticCipher from "@cipher/monoalphabeticCipher"
 import * as polyalphabeticCipher from "@cipher/polyalphabeticCipher"
 import * as hillCipher from "@cipher/hillCipher"
+import * as playfairCipher from "@cipher/playfairCipher"
 import { useState } from "react"
 
 const CaesarCipher = () => {
@@ -106,7 +107,30 @@ const HillCipher = () => {
   )
 }
 
+const PlayfairCipher = () => {
+  const [plaintext, setPlainText] = useState('')
+  let [ciphertext, setCipherText] = useState('')
+  const [key, setKey] = useState('')
+  return (
+    <div>
+      <h2>Playfair Cipher</h2>
+      
+      <h3><strong>KEY:</strong></h3>
+      <input name="key" type="text"value={key} onChange={(e) => setKey(e.target.value)} />
+
+      <h3><strong>PLAINTEXT:</strong></h3>
+      <input type="text" value={plaintext} onChange={e => setPlainText(e.target.value)} />
+
+      <h3><strong>ENCRYPTED:</strong></h3>
+      <p>{ciphertext = playfairCipher.encrypt({plaintext, key})}</p>
+
+      <h3><strong>DECRYPTED:</strong></h3>
+      <p>{playfairCipher.decrypt({ciphertext, key})}</p>
+    </div>
+  )
+}
 // export default CaesarCipher
 // export default MonoalphabeticCipher
 // export default PolyalphabeticCipher
-export default HillCipher
+// export default HillCipher
+export default PlayfairCipher

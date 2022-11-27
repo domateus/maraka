@@ -1,17 +1,46 @@
-type Message = {
+type Message<T = MessagePayloadTypes> = {
   id: string;
-  text: string;
   from: string;
+  to: string;
+  timestamp: number;
+  payload: T;
+};
 
-  // Optional fields
-  timestamp?: number;
+type MessagePayloadTypes =
+  | KeyExchangePayload
+  | TextPayload
+  | AlgorithmPSKPayload;
 
-  // Optional fields with default values
-  isDeleted?: boolean;
+type EncryptionAlgorithm =
+  | "Caesar cipher"
+  | "Monoalphabetic"
+  | "Polyalphabetic"
+  | "Hill cipher"
+  | "Playfair"
+  | "OTP"
+  | "Rail fence"
+  | "Columnar"
+  | "DES"
+  | "AES"
+  | "RC4"
+  | "RSA"
+  | "ECC";
 
-  // Optional fields with default values and type assertions
-  isStarred?: boolean;
-  isArchived?: boolean;
+type KeyExchangePayload = {
+  type: "KEY_EXCHANGE";
+  publicKey: string;
+};
+
+type TextPayload = {
+  type: "MESSAGE";
+  text: string;
+  encryption: EncryptionAlgorithm;
+};
+
+type AlgorithmPSKPayload = {
+  type: "ALGORITHM_PSK";
+  encryption: EncryptionAlgorithm;
+  psk: string;
 };
 
 type Contact = {
@@ -19,6 +48,7 @@ type Contact = {
   name: string;
   email: string;
   hasUnreadMessages: boolean;
+  canScrollToNewMessages: boolean;
 };
 
 type EncryptPayload = {

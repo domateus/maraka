@@ -50,3 +50,17 @@ type Contact = {
   hasUnreadMessages: boolean;
   canScrollToNewMessages: boolean;
 };
+
+type EncryptPayload = {
+  plaintext: string;
+  key: string;
+};
+
+type DecryptPayload = {
+  ciphertext: string;
+  key: string;
+};
+
+type Encrypter = (payload: EncryptPayload) => string;
+
+type Decrypter = (payload: DecryptPayload) => string;

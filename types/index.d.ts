@@ -31,6 +31,25 @@ type DecryptPayload = {
   key: string;
 };
 
+type RsaEncryptPayload = {
+  plaintext: string;
+  publicKey: bigint[];
+};
+
+type RsaDecryptPayload = {
+  ciphertext: string;
+  privateKey: bigint[];
+};
+
 type Encrypter = (payload: EncryptPayload) => string;
 
 type Decrypter = (payload: DecryptPayload) => string;
+
+type RsaEncrypter = (payload: RsaEncryptPayload) => string;
+
+type RsaDecrypter = (payload: RsaDecryptPayload) => string;
+
+type KeyPair = {
+  publicKey: bigint[],
+  privateKey: bigint[]
+}

@@ -11,3 +11,31 @@ export function getAsciiCodes(s:string):bigint[]{
 }
 
 export const zip = <T, U = T>(a: T[], b: U[]) => a.map((k, i) => [k, b[i]]);
+
+export function gcd(a:bigint, b:bigint):bigint {
+    if (!b) {
+        return a;
+    }
+    return gcd(b, a % b);
+}
+
+export function extendedEuclidean(a:bigint, b:bigint):bigint[]{
+    if (b === 0n) {
+        return [1n, 0n, a];
+    }
+    const [x, y, gcd] = extendedEuclidean(b, a % b);
+    return [y, x - (a / b) * y, gcd];
+}
+
+export function getRandomInt(min:number, max:number) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
+}
+
+export function getRandomPrime(){
+    const arrayIndex = getRandomInt(0,LIST_PRIMES.length-1);
+    const randomPrime = LIST_PRIMES[arrayIndex];
+    console.log("random prime for e: ",randomPrime);
+    return randomPrime;
+}

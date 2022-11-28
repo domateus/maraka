@@ -3,6 +3,7 @@ import * as monoalphabeticCipher from "@cipher/monoalphabeticCipher"
 import * as polyalphabeticCipher from "@cipher/polyalphabeticCipher"
 import * as hillCipher from "@cipher/hillCipher"
 import * as playfairCipher from "@cipher/playfairCipher"
+import * as railFenceCipher from "@cipher/railFenceCipher"
 import { useState } from "react"
 
 const CaesarCipher = () => {
@@ -129,8 +130,33 @@ const PlayfairCipher = () => {
     </div>
   )
 }
+
+const RailFenceCipher = () => {
+  const [plaintext, setPlainText] = useState('')
+  let [ciphertext, setCipherText] = useState('')
+  const [key, setKey] = useState(2)
+  return (
+    <div>
+      <h2>Rail Fence Cipher</h2>
+      
+      <h3><strong>KEY:</strong></h3>
+      <input name="key" type="number"value={key} onChange={(e) => setKey(parseInt(e.target.value))} />
+
+      <h3><strong>PLAINTEXT:</strong></h3>
+      <input type="text" value={plaintext} onChange={e => setPlainText(e.target.value)} />
+
+      <p><strong>ENCRYPTED:</strong></p>
+      <p>{ciphertext = railFenceCipher.encrypt({plaintext, key})}</p>
+
+      <p><strong>DECRYPTED:</strong></p>
+      <p>{railFenceCipher.decrypt({ciphertext, key})}</p>
+    </div>
+  )
+}
+
 // export default CaesarCipher
 // export default MonoalphabeticCipher
 // export default PolyalphabeticCipher
 // export default HillCipher
-export default PlayfairCipher
+// export default PlayfairCipher
+export default RailFenceCipher

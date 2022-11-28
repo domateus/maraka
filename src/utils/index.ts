@@ -6,3 +6,11 @@ export function uuidv4() {
     ).toString(16)
   );
 }
+
+// Random Key Generator (UTF-16)
+export default function randomKeyGenerator() {
+  return Array.from(Array(256).keys())            // generate a sequence from 1 to 256
+              .sort(() => Math.random() - 0.5)    // Math.random() used just to randomize the sequence...
+              .map((c) => String.fromCharCode(c)) // convert to UTF-16
+              .join("");
+}

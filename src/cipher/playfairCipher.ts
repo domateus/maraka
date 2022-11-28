@@ -1,21 +1,7 @@
 // Playfair Cipher
 
-type EncryptPayload = {
-    plaintext: string;
-    key: string;
-  };
-  
-type DecryptPayload = {
-    ciphertext: string;
-    key: string;
-  };
-
 type KeyMatrixGenerator = (key: string) => string[][];
 
-type Encrypter = (payload: EncryptPayload) => string;
-
-type Dencrypter = (payload: DecryptPayload) => string;
-  
 // Generate the key matrix from the key string.
 export const genKeyMatrix: KeyMatrixGenerator = (key) => {
   // remove non-alphabets
@@ -79,7 +65,7 @@ export const encrypt: Encrypter = ({ plaintext, key }) => {
 }
   
 // Decryption
-export const decrypt: Dencrypter = ({ ciphertext, key }) => {
+export const decrypt: Decrypter = ({ ciphertext, key }) => {
   if (ciphertext === "") return "";
 
   let keyMatrix: string[][] = genKeyMatrix(key);

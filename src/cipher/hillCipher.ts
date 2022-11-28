@@ -1,20 +1,6 @@
 // Hill Cipher using pre-determined Key Matrices.
-//import { multiply } from 'mathjs';
+import * as utils from './utils';
 const { multiply } = require('mathjs')
-
-type EncryptPayload = {
-    plaintext: string;
-    key: string; //Expected values: 'KEY1', 'KEY2' or 'KEY3'.
-  };
-  
-type DecryptPayload = {
-    ciphertext: string;
-    key: string; //Expected values: 'KEY1', 'KEY2' or 'KEY3'.
-  };
-  
-type Encrypter = (payload: EncryptPayload) => string;
-  
-type Dencrypter = (payload: DecryptPayload) => string;
 
 // Pre-determined Key Matrices and their Inverse Matrices
 export const KEYS = {
@@ -39,10 +25,10 @@ export const encrypt: Encrypter = ({ plaintext, key }) => {
   }
   
   if (text.length % 3 !== 0) {
-    text += "Z".repeat(3 - (text.length % 3));
+    text += "X".repeat(3 - (text.length % 3));
   }
   
-  const textMatrix = text.match(/.{3}/g)!.map((c) => c.split("").map((c) => c.charCodeAt(0) - 65));
+  const textMatrix = text.match(/.{3}/g)!.map((c) => c.split("").map((c) => c.charCodeAt(0) - utils.ASCII_ALPHABET_INDEX));
 
   let keyMatrix:number[][] = [];
 
@@ -57,13 +43,13 @@ export const encrypt: Encrypter = ({ plaintext, key }) => {
   }
 
   const productMatrix = multiply(textMatrix, keyMatrix);
-  const moduloMatrix = productMatrix.map((row: any[]) => row.map((c) => (c % 26) + 65));
+  const moduloMatrix = productMatrix.map((row: any[]) => row.map((c) => (c % 26) + utils.ASCII_ALPHABET_INDEX));
 
   return moduloMatrix.map((row: any[]) => row.map((c) => String.fromCharCode(c)).join("")).join("");
 }
   
 // Decryption
-export const decrypt: Dencrypter = ({ ciphertext, key }) => {
+export const decrypt: Decrypter = ({ ciphertext, key }) => {
 
   let text = ciphertext;
 
@@ -75,7 +61,7 @@ export const decrypt: Dencrypter = ({ ciphertext, key }) => {
       text += "Z".repeat(3 - (text.length % 3));
   }
 
-  const textMatrix = text.match(/.{3}/g)!.map((row) => row.split("").map((c) => c.charCodeAt(0) - 65));
+  const textMatrix = text.match(/.{3}/g)!.map((row) => row.split("").map((c) => c.charCodeAt(0) - utils.ASCII_ALPHABET_INDEX));
 
   let invKey: number[][] = [];
   
@@ -90,7 +76,7 @@ export const decrypt: Dencrypter = ({ ciphertext, key }) => {
   }
   
   const productMatrix = multiply(textMatrix, invKey);
-  const moduloMatrix = productMatrix.map((row: any[]) => row.map((c) => (c % 26) + 65));
+  const moduloMatrix = productMatrix.map((row: any[]) => row.map((c) => (c % 26) + utils.ASCII_ALPHABET_INDEX));
 
   return moduloMatrix.map((row: any[]) => row.map((c) => String.fromCharCode(c)).join("")).join("");
 }

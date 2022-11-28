@@ -1,5 +1,6 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { createWrapper } from "next-redux-wrapper";
+import command from "./command";
 import contacts from "./contacts";
 import messages from "./messages";
 import session from "./session";
@@ -8,6 +9,7 @@ const combinedReducer = combineReducers({
   contacts,
   messages,
   session,
+  command,
 });
 
 export const store = configureStore({ reducer: combinedReducer });

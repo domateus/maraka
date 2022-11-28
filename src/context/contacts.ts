@@ -27,9 +27,32 @@ export const contactsSlice = createSlice({
         u.name === action.payload ? { ...u, hasUnreadMessages: true } : u
       );
     },
+    readMessages: (state, action: PayloadAction<string>) => {
+      state.contacts = state.contacts.map((u) =>
+        u.name === action.payload ? { ...u, hasUnreadMessages: false } : u
+      );
+    },
+    canScrollToNewMessages: (state, action: PayloadAction<string>) => {
+      state.contacts = state.contacts.map((u) =>
+        u.name === action.payload ? { ...u, canScrollToNewMessages: true } : u
+      );
+    },
+    noMessagesToScrollTo: (state, action: PayloadAction<string>) => {
+      state.contacts = state.contacts.map((u) =>
+        u.name === action.payload ? { ...u, canScrollToNewMessages: false } : u
+      );
+    },
   },
 });
 
-export const { push, remove, set, gotUnreadMessages } = contactsSlice.actions;
+export const {
+  push,
+  remove,
+  set,
+  gotUnreadMessages,
+  readMessages,
+  canScrollToNewMessages,
+  noMessagesToScrollTo,
+} = contactsSlice.actions;
 
 export default contactsSlice.reducer;

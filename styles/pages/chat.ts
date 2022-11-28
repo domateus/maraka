@@ -2,15 +2,12 @@ import styled from "styled-components";
 
 export const Chat = styled.div`
   display: flex;
-  flex-direction: row;
   height: 100%;
   max-height: 100vh;
   width: 100%;
   align-items: flex-start;
   justify-content: space-between;
-  > div:nth-child(2) {
-    width: 80%;
-  }
+  flex-direction: row;
 `;
 
 export const Header = styled.header`

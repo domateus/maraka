@@ -1,9 +1,12 @@
-import { gotUnreadMessages } from "@context/contacts";
+import ChatInput from "@components/ChatInput";
+import Messages from "@components/Messages";
+import { commandSet, tell } from "@context/command";
+import { canScrollToNewMessages, gotUnreadMessages } from "@context/contacts";
 import { push } from "@context/messages";
 import { RootState } from "@context/store";
 import { uuidv4 } from "@utils";
-import { useEffect, useState } from "react";
-import { FiSend } from "react-icons/fi";
+import { useCallback, useEffect } from "react";
+import { IoIosArrowDropdown } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import { Socket } from "socket.io-client";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
@@ -16,76 +19,81 @@ const Inbox = ({
 }) => {
   const dispatch = useDispatch();
 
-  const { messages } = useSelector((state: RootState) => state.messages);
   const { user, userToChat } = useSelector((state: RootState) => state.session);
+  const { contacts } = useSelector((state: RootState) => state.contacts);
+  const { messages } = useSelector((state: RootState) => state.messages);
 
-  console.log("messages", messages);
-
-  const [message, setMessage] = useState("");
-
-  const sendMessage = () => {
+  const sendMessage = ({
+    text,
+    encryption,
+  }: {
+    text: string;
+    encryption: EncryptionAlgorithm;
+  }) => {
     if (!socket || !user) return;
-    const newMessage = {
+    const newMessage: Message<TextPayload> = {
       id: uuidv4(),
       from: user,
-      text: message,
-      channel: userToChat,
+      to: userToChat,
+      timestamp: Date.now(),
+      payload: {
+        type: "MESSAGE",
+        text,
+        encryption,
+      },
     };
-    dispatch(push(newMessage));
-    socket.emit("send-message", { from: user, to: userToChat, text: message });
-    setMessage("");
+    dispatch(push({ ...newMessage, channel: userToChat }));
+    socket.emit("send-message", newMessage);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      sendMessage();
-    }
-  };
-
-  useEffect(() => {
-    socket.on("receive-message", (message: Message) => {
+  const handleTextMessage = useCallback(
+    (message: Message<TextPayload>) => {
       dispatch(push({ ...message, channel: message.from }));
       if (message.from !== userToChat) {
         dispatch(gotUnreadMessages(message.from));
+      } else {
+        dispatch(canScrollToNewMessages(message.from));
+      }
+    },
+    [dispatch, userToChat]
+  );
+
+  useEffect(() => {
+    socket.on("receive-message", (message: Message) => {
+      console.log("received message", message);
+      if (message.payload.type === "MESSAGE") {
+        handleTextMessage(message as Message<TextPayload>);
       }
     });
     return () => {
       socket.off("receive-message");
     };
-  }, [dispatch, socket, user, userToChat]);
+  }, [socket, handleTextMessage]);
 
-  if (!userToChat) return <div></div>;
+  if (!userToChat && !contacts.find((u) => u.name === userToChat))
+    return <div></div>;
 
   return (
-    <div>
-      <S.Messages>
-        {(messages[userToChat] || []).map(({ id, from, text }) =>
-          from === user ? (
-            <S.MyMessage key={id}>
-              <div>{from}</div>
-              <div>{text}</div>
-            </S.MyMessage>
-          ) : (
-            <S.TheirMessage key={id}>
-              <div>{from}</div>
-              <div>{text}</div>
-            </S.TheirMessage>
-          )
-        )}
-      </S.Messages>
+    <S.Container>
+      <Messages />
       <br />
-      <S.InputContainer>
-        <S.Input
-          type="text"
-          value={message}
-          onKeyDown={handleKeyDown}
-          onChange={(e) => setMessage(e.target.value)}
-        />
-        <S.SendButton onClick={sendMessage}>
-          <FiSend color="black" />
-        </S.SendButton>
-      </S.InputContainer>
-    </div>
+      <ChatInput sendMessage={sendMessage} />
+      {contacts.find((u) => u.name === userToChat)?.canScrollToNewMessages && (
+        <S.ScrollContainer
+          onClick={() =>
+            dispatch(
+              tell({
+                targetId:
+                  messages[userToChat][messages[userToChat].length - 1].id,
+                name: commandSet.SCROLL_DOWN,
+              })
+            )
+          }
+        >
+          <IoIosArrowDropdown />
+        </S.ScrollContainer>
+      )}
+    </S.Container>
   );
 };
 

@@ -65,5 +65,8 @@ type Encrypter = (payload: EncryptPayload) => string;
 
 type Decrypter = (payload: DecryptPayload) => string;
 
+type MonoalphabeticRandomKeyGenerator = () => string;
 
-type RandomKeyGenerator = () => string;
+type PlayfairKeyMatrixGeneratorPayload = { key: string };
+
+type PlayfairKeyMatrixGenerator = (payload: PlayfairKeyMatrixGeneratorPayload) => string[][];

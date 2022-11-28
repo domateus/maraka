@@ -4,7 +4,7 @@ import * as polyalphabeticCipher from "@cipher/polyalphabeticCipher"
 import * as hillCipher from "@cipher/hillCipher"
 import * as playfairCipher from "@cipher/playfairCipher"
 import * as railFenceCipher from "@cipher/railFenceCipher"
-import randomKeyGenerator from "@utils"
+import monoalphabeticRandomKeyGenerator from "@utils"
 import { useState } from "react"
 
 const CaesarCipher = () => {
@@ -39,7 +39,7 @@ const MonoalphabeticCipher = () => {
       <h2>Monoalphabetic Cipher</h2>
       
       <h3><strong>KEY<br/>
-        <button type="button" onClick={(e) => setKey(randomKeyGenerator())}>Generate Random Key</button>
+        <button type="button" onClick={(e) => setKey(monoalphabeticRandomKeyGenerator())}>Generate Random Key</button>
       </strong></h3>
       
       <p>{key}</p>
@@ -156,8 +156,8 @@ const RailFenceCipher = () => {
 }
 
 // export default CaesarCipher
-export default MonoalphabeticCipher
+// export default MonoalphabeticCipher
 // export default PolyalphabeticCipher
 // export default HillCipher
-// export default PlayfairCipher
+export default PlayfairCipher
 // export default RailFenceCipher

@@ -1,9 +1,7 @@
 // Playfair Cipher
 
-type KeyMatrixGenerator = (key: string) => string[][];
-
-// Generate the key matrix from the key string.
-export const genKeyMatrix: KeyMatrixGenerator = (key) => {
+// Generate the key matrix from the key string for Playfair Cipher
+export const genPlayfairKeyMatrix: PlayfairKeyMatrixGenerator = ({ key }) => {
   // remove non-alphabets
   let keyArray: string[] = key.toUpperCase().split("").filter((c) => c.match(/[A-Z]/));
   
@@ -22,7 +20,7 @@ export const genKeyMatrix: KeyMatrixGenerator = (key) => {
 
 // Encryption
 export const encrypt: Encrypter = ({ plaintext, key }) => {
-  let keyMatrix: string[][] = genKeyMatrix(key);
+  let keyMatrix: string[][] = genPlayfairKeyMatrix({key});
 
   let plaintextArray: string[] = plaintext.toUpperCase().split("").filter((c) => c.match(/[A-Z]/));
   plaintextArray = plaintextArray.map((c) => (c === "J" ? "I" : c));
@@ -68,7 +66,7 @@ export const encrypt: Encrypter = ({ plaintext, key }) => {
 export const decrypt: Decrypter = ({ ciphertext, key }) => {
   if (ciphertext === "") return "";
 
-  let keyMatrix: string[][] = genKeyMatrix(key);
+  let keyMatrix: string[][] = genPlayfairKeyMatrix({key});
         
   let ciphertextArray: string[][] = [];
   for (let pair of ciphertext.match(/.{2}/g)!){

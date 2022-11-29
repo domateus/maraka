@@ -1,5 +1,6 @@
 import * as utils from './utils';
 import playground from "../../pages/playground";
+import * as util from "util";
 
 function generateE(totient:bigint) {
     let e = utils.getRandomPrime() ?? 1;
@@ -59,11 +60,11 @@ export const encrypt: RsaEncrypter = ({plaintext, publicKey}) => {
     const cipher = [];
 
     //encryption for each ascii character
-    const aha = plaintext.split("").map((c) => BigInt(c.charCodeAt(0)));
-    //aha.map(v => (v ** e) % n)
-    const cipherTextCodes = aha.map((v) => ((v ** e) % n));
+    const plainTextCodes = plaintext.split("").map((c) => BigInt(c.charCodeAt(0)));
+    console.log(utils.bigintPower(plainTextCodes[0], e));
+    const cipherTextCodes = plainTextCodes.map((v) => (utils.bigintPower(v,e) % n));
     //converting to string (no conversion to ascii: too big!
-    return cipherTextCodes.map( c => String(c)).join();
+    return "aha"// cipherTextCodes.map( c => String(c)).join();
     //return plaintext.split("").map( c => String.fromCharCode((Number((BigInt(c.charCodeAt(0)) ** e ) % n)).join();
 }
 

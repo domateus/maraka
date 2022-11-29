@@ -39,3 +39,7 @@ export function getRandomPrime(){
     console.log("random prime for e: ",randomPrime);
     return randomPrime;
 }
+
+export function bigintPower(base:bigint, exponent:bigint){
+ return eval(`${base} ** ${exponent}`);
+}

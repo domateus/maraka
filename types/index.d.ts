@@ -35,6 +35,7 @@ type TextPayload = {
   type: "MESSAGE";
   text: string;
   encryption: EncryptionAlgorithm;
+  key?: string;
 };
 
 type AlgorithmPSKPayload = {
@@ -46,9 +47,21 @@ type AlgorithmPSKPayload = {
 type Contact = {
   id: number;
   name: string;
-  email: string;
+  publicKey: string[];
   hasUnreadMessages: boolean;
   canScrollToNewMessages: boolean;
+  keys: AlgorithmKey[];
+};
+
+type AlgorithmKey = {
+  timestamp: number;
+  type: EncryptionAlgorithm;
+  value: string | bigint[];
+};
+
+type AddKeyPayload = {
+  contactName: name;
+  key: AlgorithmKey;
 };
 
 type EncryptPayload = {
@@ -61,6 +74,31 @@ type DecryptPayload = {
   key: string;
 };
 
+type GenerateKeyPayload = {
+  algorithm?: EncryptionAlgorithm;
+  message: string;
+  contact?: Contact;
+};
+
+type DecryptMessagePayload = {
+  algorithm?: EncryptionAlgorithm;
+  message: string;
+  key?: string;
+};
+
+type EncryptMessagePayload = {
+  algorithm?: EncryptionAlgorithm;
+  plaintext: string;
+  key?: string;
+};
+
 type Encrypter = (payload: EncryptPayload) => string;
 
 type Decrypter = (payload: DecryptPayload) => string;
+
+type KeyGenerator = (payload: GenerateKeyPayload) => string;
+
+type SessionKeyPair = {
+  privateKey: string[];
+  publicKey: string[];
+};

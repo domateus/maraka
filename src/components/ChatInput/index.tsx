@@ -35,7 +35,7 @@ const ChatInput: React.FC<{
   const { theme } = useSelector((state: RootState) => state.session);
 
   const [text, setText] = useState("");
-  const [encryption, setEncryption] = useState<EncryptionAlgorithm>("AES");
+  const [encryption, setEncryption] = useState<EncryptionAlgorithm>("OTP");
   const [tooltipKey, resetTooltip] = useState(uuidv4());
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

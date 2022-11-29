@@ -1,5 +1,7 @@
 import * as contactsActions from "@context/contacts";
 import * as sessionActions from "@context/session";
+import { setKeys } from "@context/session";
+import { generateRsaKeys } from "@utils";
 import React, { useEffect } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,7 +13,7 @@ import { RootState } from "../src/context/store";
 import * as S from "../styles/pages/chat";
 //"http://fast-chamber-80133.herokuapp.com/"
 
-const socket = io("http://fast-chamber-80133.herokuapp.com");
+const socket = io("http://fast-chamber-80133.herokuapp.com/");
 
 const Chat: React.FC = () => {
   const dispatch = useDispatch();
@@ -30,7 +32,9 @@ const Chat: React.FC = () => {
       return;
     } else {
       dispatch(sessionActions.defineName());
-      socket.emit("add", user);
+      const { publicKey, privateKey } = generateRsaKeys();
+      dispatch(setKeys({ publicKey, privateKey }));
+      socket.emit("add", { user, publicKey });
     }
   };
 

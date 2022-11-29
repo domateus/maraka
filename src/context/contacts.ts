@@ -42,6 +42,24 @@ export const contactsSlice = createSlice({
         u.name === action.payload ? { ...u, canScrollToNewMessages: false } : u
       );
     },
+    updateKey: (state, action: PayloadAction<AddKeyPayload>) => {
+      const contact = state.contacts.find(
+        (u) => u.name === action.payload.contactName
+      );
+      if (contact) {
+        contact.keys = contact.keys
+          .filter((k) => k.type !== action.payload.key.type)
+          .concat(action.payload.key);
+      }
+    },
+    addKey: (state, action: PayloadAction<AddKeyPayload>) => {
+      const contact = state.contacts.find(
+        (u) => u.name === action.payload.contactName
+      );
+      if (contact) {
+        contact.keys.push(action.payload.key);
+      }
+    },
   },
 });
 
@@ -53,6 +71,8 @@ export const {
   readMessages,
   canScrollToNewMessages,
   noMessagesToScrollTo,
+  updateKey,
+  addKey,
 } = contactsSlice.actions;
 
 export default contactsSlice.reducer;

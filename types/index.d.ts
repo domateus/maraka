@@ -61,6 +61,16 @@ type DecryptPayload = {
   key: string;
 };
 
+type RsaEncryptPayload = {
+  plaintext: string;
+  publicKey: bigint[];
+};
+
+type RsaDecryptPayload = {
+  ciphertext: string;
+  privateKey: bigint[];
+};
+
 type Encrypter = (payload: EncryptPayload) => string;
 
 type Decrypter = (payload: DecryptPayload) => string;
@@ -70,3 +80,12 @@ type MonoalphabeticRandomKeyGenerator = () => string;
 type PlayfairKeyMatrixGeneratorPayload = { key: string };
 
 type PlayfairKeyMatrixGenerator = (payload: PlayfairKeyMatrixGeneratorPayload) => string[][];
+
+type RsaEncrypter = (payload: RsaEncryptPayload) => string;
+
+type RsaDecrypter = (payload: RsaDecryptPayload) => string;
+
+type KeyPair = {
+  publicKey: bigint[],
+  privateKey: bigint[]
+}

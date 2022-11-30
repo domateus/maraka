@@ -1,81 +1,73 @@
-import * as utils from './utils';
-import playground from "../../pages/playground";
-import * as util from "util";
+import * as utils from "./utils";
 
-function generateE(totient:bigint) {
-    let e = utils.getRandomPrime() ?? 1;
-    while (utils.gcd(e, totient) !== 1n) {
-        e += 2n;
-    }
-    return e;
+function generateE(totient: bigint) {
+  let e = utils.getRandomPrime() ?? 1;
+  while (utils.gcd(e, totient) !== 1n) {
+    e += 2n;
+  }
+  return e;
 }
 
-function computeD(e:bigint, totient:bigint) {
-    let d = utils.extendedEuclidean(e, totient)[0];
-    while (d < 1n) {
-        d += totient;
-    }
-    return d;
+function computeD(e: bigint, totient: bigint) {
+  let d = utils.extendedEuclidean(e, totient)[0];
+  while (d < 1n) {
+    d += totient;
+  }
+  return d;
 }
 
-export function generateKeys():KeyPair{
+export function generateKeys(): KeyPair {
+  const prime1 = utils.getRandomPrime();
+  let prime2 = utils.getRandomPrime();
 
-    const prime1 = utils.getRandomPrime();
-    let prime2 = utils.getRandomPrime();
+  //Prime numbers should not be equal,so this loop makes a lookup for a not equal prime number
+  while (prime1 === prime2) {
+    prime2 = utils.getRandomPrime();
+  }
+  console.log("primes: ", prime1, prime2);
+  //calculating n
+  const n = prime1 * prime2;
 
-    //Prime numbers should not be equal,so this loop makes a lookup for a not equal prime number
-    while (prime1 === prime2){
-        prime2 = utils.getRandomPrime();
-    }
+  //calculating totient(n)
+  const totient: bigint = (prime1 - 1n) * (prime2 - 1n);
+  console.log("totient: ", totient);
 
-    //calculating n
-    const n = prime1 * prime2;
+  //calculating e
+  const e = generateE(totient);
 
-    //calculating totient(n)
-    const totient:bigint = (prime1-1n) * (prime2-1n);
+  //calculating d
+  const d = computeD(e, totient);
 
-    //calculating e
-    const e = generateE(totient);
+  //create public key
+  const publicKey = [e, n];
 
-    //calculating d
-    const d = computeD(e,totient);
+  //create private key
+  const privateKey = [d, n];
 
-    //create public key
-    const publicKey = [e,n];
-
-    //create private key
-    const privateKey = [d,n];
-
-    return {
-        publicKey,
-        privateKey
-    };
-
+  return {
+    publicKey,
+    privateKey,
+  };
 }
 
-export const encrypt: RsaEncrypter = ({plaintext, publicKey}) => {
-    //get the parts of public key for encryption
-    const e = BigInt(publicKey[0]);
-    const n = BigInt(publicKey[1]);
-    const cipher = [];
+export const encrypt: RsaEncrypter = ({ plaintext, publicKey }) => {
+  //get the parts of public key for encryption
+  const [e, n] = publicKey;
 
-    //encryption for each ascii character
-    const plainTextCodes = plaintext.split("").map((c) => BigInt(c.charCodeAt(0)));
-    console.log(utils.bigintPower(plainTextCodes[0], e));
-    const cipherTextCodes = plainTextCodes.map((v) => (utils.bigintPower(v,e) % n));
-    //converting to string (no conversion to ascii: too big!
-    return "aha"// cipherTextCodes.map( c => String(c)).join();
-    //return plaintext.split("").map( c => String.fromCharCode((Number((BigInt(c.charCodeAt(0)) ** e ) % n)).join();
-}
+  return utils
+    .hexToXByteBigIntArray(utils.asciiToHex(plaintext), 1)
+    .map((base) => utils.bigIntToXBytePaddedHex(utils.modPow(base, e, n), 4))
+    .join("");
+};
 
-export const decrypt: RsaDecrypter = ({ciphertext, privateKey}) => {
-    //get the parts of private key for decryption
-    const d = privateKey[0];
-    const n = privateKey[1];
+export const decrypt: RsaDecrypter = ({ ciphertext, privateKey }) => {
+  //get the parts of private key for decryption
+  const [d, n] = privateKey;
 
-    //decryption for each ascii character
-    const plainTextCodes = ciphertext.split("").map( p => (BigInt(p.charCodeAt(0)) ** d) % n)
-    //converting to ascii again
-    return plainTextCodes.map(p => String.fromCharCode(Number(p))).join();
-
-}
+  return utils
+    .hexToXByteBigIntArray(ciphertext, 4)
+    .map((base) =>
+      utils.hexToAscii(utils.bigIntToHex(utils.modPow(base, d, n)))
+    )
+    .join("");
+};

@@ -6,3 +6,12 @@ export function uuidv4() {
     ).toString(16)
   );
 }
+
+// Random Key Generator for Monoalphabetic Cipher to use in the front-end
+export default function monoalphabeticRandomKeyGenerator() {
+  return Array.from(Array(256).keys())            // generate a sequence of integers from 1 to 256
+              .sort(() => Math.random() - 0.5)    // Math.random() used just to randomize the sequence...
+              .map((c) => String.fromCharCode(c)) // convert to UTF-16
+              .join("");
+}
+

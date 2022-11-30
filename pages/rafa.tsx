@@ -4,6 +4,7 @@ import * as polyalphabeticCipher from "@cipher/polyalphabeticCipher"
 import * as hillCipher from "@cipher/hillCipher"
 import * as playfairCipher from "@cipher/playfairCipher"
 import * as railFenceCipher from "@cipher/railFenceCipher"
+import monoalphabeticRandomKeyGenerator from "@utils"
 import { useState } from "react"
 
 const CaesarCipher = () => {
@@ -21,10 +22,10 @@ const CaesarCipher = () => {
       <input type="text" value={plaintext} onChange={e => setPlainText(e.target.value)} />
 
       <p><strong>ENCRYPTED:</strong></p>
-      <p>{ciphertext = caesarCipher.encrypt({plaintext, key})}</p>
+      <p>{ciphertext = caesarCipher.encrypt({plaintext, key: `${key}`})}</p>
 
       <p><strong>DECRYPTED:</strong></p>
-      <p>{caesarCipher.decrypt({ciphertext, key})}</p>
+      <p>{caesarCipher.decrypt({ciphertext, key: `${key}`})}</p>
     </div>
   )
 }
@@ -38,7 +39,7 @@ const MonoalphabeticCipher = () => {
       <h2>Monoalphabetic Cipher</h2>
       
       <h3><strong>KEY<br/>
-        <button type="button" onClick={(e) => setKey(monoalphabeticCipher.randomKeyGenerator())}>Generate Random Key</button>
+        <button type="button" onClick={(e) => setKey(monoalphabeticRandomKeyGenerator())}>Generate Random Key</button>
       </strong></h3>
       
       <p>{key}</p>
@@ -146,10 +147,10 @@ const RailFenceCipher = () => {
       <input type="text" value={plaintext} onChange={e => setPlainText(e.target.value)} />
 
       <p><strong>ENCRYPTED:</strong></p>
-      <p>{ciphertext = railFenceCipher.encrypt({plaintext, key})}</p>
+      <p>{ciphertext = railFenceCipher.encrypt({plaintext, key: `${key}`})}</p>
 
       <p><strong>DECRYPTED:</strong></p>
-      <p>{railFenceCipher.decrypt({ciphertext, key})}</p>
+      <p>{railFenceCipher.decrypt({ciphertext, key: `${key}`})}</p>
     </div>
   )
 }
@@ -158,5 +159,5 @@ const RailFenceCipher = () => {
 // export default MonoalphabeticCipher
 // export default PolyalphabeticCipher
 // export default HillCipher
-// export default PlayfairCipher
-export default RailFenceCipher
+export default PlayfairCipher
+// export default RailFenceCipher

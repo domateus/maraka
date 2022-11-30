@@ -1,4 +1,5 @@
 import * as otp from '@cipher/otp'
+import * as rsa from '@cipher/rsa'
 import { useState } from "react"
 
 const Playground = () => {
@@ -9,10 +10,21 @@ const Playground = () => {
     const [encryptedText, setEncryptedText] = useState('')
     const [decryptedText, setDecryptedText] = useState('')
 
-    const encrypt = () => {
+    const encryptOTP = () => {
         const encrypted = otp.encrypt({plaintext, key})
          setEncryptedText(encrypted)
          setDecryptedText(otp.decrypt({ciphertext: encrypted,key}))
+    }
+
+    const encryptRSA = () => {
+        const keyPair = rsa.generateKeys();
+        const publicKey = keyPair.publicKey;
+        const privateKey = keyPair.privateKey;
+        // @ts-ignore
+        let aha = publicKey ** privateKey
+        const encrypted = rsa.encrypt({plaintext, publicKey})
+        setEncryptedText(encrypted)
+        setDecryptedText(rsa.decrypt({ciphertext: encrypted,privateKey}))
     }
 
     const decrypt = () => {
@@ -29,7 +41,7 @@ const Playground = () => {
         <input name="key" type="text"value={key} onChange={(e) => setKey(e.target.value)} />
 
 
-        <button onClick={encrypt}>encypt</button>
+        <button onClick={encryptRSA}>encypt</button>
       <p>encrypted:</p>
       <p>{encryptedText}</p>
 

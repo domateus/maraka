@@ -7,6 +7,7 @@ export const LIST_PRIMES = [7n, 11n, 13n, 17n, 19n, 23n, 29n, 31n, 37n, 41n, 43n
 
 export const LIST_PRIMES_SIZE = LIST_PRIMES.length;
 export const ASCII_TABLE_SIZE = 127n;
+export const ASCII_ALPHABET_INDEX = 65;
 
 export function getAsciiCodes(s: string): bigint[] {
   return s.split("").map((c) => BigInt(c.charCodeAt(0)));

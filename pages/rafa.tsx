@@ -4,6 +4,7 @@ import * as polyalphabeticCipher from "@cipher/polyalphabeticCipher"
 import * as hillCipher from "@cipher/hillCipher"
 import * as playfairCipher from "@cipher/playfairCipher"
 import * as railFenceCipher from "@cipher/railFenceCipher"
+import * as columnarCipher from "@cipher/columnarCipher"
 import monoalphabeticRandomKeyGenerator from "@utils"
 import { useState } from "react"
 
@@ -155,9 +156,33 @@ const RailFenceCipher = () => {
   )
 }
 
+const ColumnarCipher = () => {
+  const [plaintext, setPlainText] = useState('')
+  let [ciphertext, setCipherText] = useState('')
+  const [key, setKey] = useState('4312567')
+  return (
+    <div>
+      <h2>Columnar Cipher</h2>
+      
+      <h3><strong>KEY:</strong></h3>
+      <input name="key" type="text"value={key} onChange={(e) => setKey(e.target.value)} />
+
+      <h3><strong>PLAINTEXT:</strong></h3>
+      <input type="text" value={plaintext} onChange={e => setPlainText(e.target.value)} />
+
+      <p><strong>ENCRYPTED:</strong></p>
+      <p>{ciphertext = columnarCipher.encrypt({plaintext, key})}</p>
+
+      <p><strong>DECRYPTED:</strong></p>
+      <p>{columnarCipher.decrypt({ciphertext, key})}</p>
+    </div>
+  )
+}
+
 // export default CaesarCipher
 // export default MonoalphabeticCipher
 // export default PolyalphabeticCipher
 // export default HillCipher
-export default PlayfairCipher
+// export default PlayfairCipher
 // export default RailFenceCipher
+export default ColumnarCipher

@@ -89,3 +89,7 @@ type KeyPair = {
   publicKey: bigint[],
   privateKey: bigint[]
 }
+
+type ColumnarKeyGeneratorPayload = { key: string };
+
+type ColumnarKeyGenerator = (payload: ColumnarKeyGeneratorPayload) => number[];

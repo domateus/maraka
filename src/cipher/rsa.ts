@@ -1,3 +1,4 @@
+import { BigInteger } from "jsbn";
 import * as utils from "./utils";
 
 function generateE(totient: bigint) {
@@ -16,7 +17,7 @@ function computeD(e: bigint, totient: bigint) {
   return d;
 }
 
-export function generateKeys(): KeyPair {
+export const generateKeys: RandomKeyGenerator = () => {
   const prime1 = utils.getRandomPrime();
   let prime2 = utils.getRandomPrime();
 
@@ -43,31 +44,50 @@ export function generateKeys(): KeyPair {
 
   //create private key
   const privateKey = [d, n];
+  const result = publicKey
+    .map((x) =>
+      utils.bigIntegerToXBytePaddedHex(new BigInteger(x.toString(16), 16), 4)
+    )
+    .concat(
+      privateKey.map((x) =>
+        utils.bigIntegerToXBytePaddedHex(new BigInteger(x.toString(16), 16), 4)
+      )
+    )
+    .join("");
+  console.log(result);
+  return result;
+};
 
-  return {
-    publicKey,
-    privateKey,
-  };
-}
+export const parseKeys = (key: string) => ({
+  publicKey: key.slice(0, 16),
+  privateKey: key.slice(16, 32),
+});
 
-export const encrypt: RsaEncrypter = ({ plaintext, publicKey }) => {
+export const encrypt: Encrypter = ({ plaintext, key }) => {
   //get the parts of public key for encryption
-  const [e, n] = publicKey;
-
+  console.log("ahoy", key, plaintext);
+  const [e, n] = utils.hexToXByteBigIntegerArray(key, 4);
+  console.log("e: ", e.toString(10));
+  console.log("n: ", n.toString(10));
   return utils
-    .hexToXByteBigIntArray(utils.asciiToHex(plaintext), 1)
-    .map((base) => utils.bigIntToXBytePaddedHex(utils.modPow(base, e, n), 4))
+    .hexToXByteBigIntegerArray(plaintext, 1)
+    .map((base) => {
+      console.log(
+        base.toString(10),
+        utils.bigIntegerToXBytePaddedHex(base.modPow(e, n), 4)
+      );
+      return utils.bigIntegerToXBytePaddedHex(base.modPow(e, n), 4);
+    })
     .join("");
 };
 
-export const decrypt: RsaDecrypter = ({ ciphertext, privateKey }) => {
+export const decrypt: Decrypter = ({ ciphertext, key }) => {
   //get the parts of private key for decryption
-  const [d, n] = privateKey;
+  console.log("ahoy", key, ciphertext);
+  const [d, n] = utils.hexToXByteBigIntegerArray(key, 4);
 
   return utils
-    .hexToXByteBigIntArray(ciphertext, 4)
-    .map((base) =>
-      utils.hexToAscii(utils.bigIntToHex(utils.modPow(base, d, n)))
-    )
+    .hexToXByteBigIntegerArray(ciphertext, 4)
+    .map((base) => utils.hexToAscii(utils.bigIntegerToHex(base.modPow(d, n))))
     .join("");
 };

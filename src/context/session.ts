@@ -5,6 +5,7 @@ export interface SessionState {
   userToChat: string;
   theme: "light" | "dark";
   hasDefinedName: boolean;
+  keys: SessionKeyPair;
 }
 
 const initialState: SessionState = {
@@ -12,6 +13,10 @@ const initialState: SessionState = {
   userToChat: "",
   theme: "dark",
   hasDefinedName: false,
+  keys: {
+    privateKey: "",
+    publicKey: "",
+  },
 };
 
 const sessionSlice = createSlice({
@@ -30,10 +35,13 @@ const sessionSlice = createSlice({
     defineName: (state) => {
       state.hasDefinedName = true;
     },
+    setKeys: (state, action: PayloadAction<SessionKeyPair>) => {
+      state.keys = action.payload;
+    },
   },
 });
 
-export const { setUser, setUserToChat, toggleTheme, defineName } =
+export const { setUser, setUserToChat, toggleTheme, defineName, setKeys } =
   sessionSlice.actions;
 
 export default sessionSlice.reducer;

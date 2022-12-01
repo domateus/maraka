@@ -85,6 +85,10 @@ type EncryptMessagePayload = {
   key: string;
 };
 
+type AsyncRandomKeyGenerator = () => Promise<string[]>;
+type DHModPowPayload = {b: string, e: string, p: string}
+type DHModPow = (payload: DHModPowPayload) => string;
+
 type Encrypter = (payload: EncryptPayload) => string;
 
 type Decrypter = (payload: DecryptPayload) => string;

@@ -99,6 +99,14 @@ type SessionKeyPair = {
 
 type PlayfairKeyMatrixGeneratorPayload = { key: string };
 
+type KeyPair = {
+  publicKey: bigint[],
+  privateKey: bigint[]
+}
+
+type ColumnarKeyGeneratorPayload = { key: string };
+
+type ColumnarKeyGenerator = (payload: ColumnarKeyGeneratorPayload) => number[];
 type PlayfairKeyMatrixGenerator = (
   payload: PlayfairKeyMatrixGeneratorPayload
 ) => string[][];

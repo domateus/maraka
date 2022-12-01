@@ -1,17 +1,154 @@
+import * as cc from "@cipher/caesarCipher";
+import * as hc from "@cipher/hillCipher";
+import * as ma from "@cipher/monoalphabetic";
+import * as otp from "@cipher/otp";
+import * as pf from "@cipher/playfair";
+import * as pa from "@cipher/polyalphabetic";
+import * as rf from "@cipher/railFence";
+import * as rsa from "@cipher/rsa";
+import { asciiToHex } from "@cipher/utils";
+// import * as col from "@cipher/columnar";
+// import * as des from "@cipher/des";
+// import * as aes from "@cipher/aes";
+// import * as rc4 from "@cipher/rc4";
+// import * as ecc from "@cipher/ecc";
+
 export function uuidv4() {
   return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
     (
       Number(c) ^
-      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (Number(c) / 4)))
+      (window.crypto.getRandomValues(new Uint8Array(1))[0] &
+        (15 >> (Number(c) / 4)))
     ).toString(16)
   );
 }
 
-// Random Key Generator for Monoalphabetic Cipher to use in the front-end
-export default function monoalphabeticRandomKeyGenerator() {
-  return Array.from(Array(256).keys())            // generate a sequence of integers from 1 to 256
-              .sort(() => Math.random() - 0.5)    // Math.random() used just to randomize the sequence...
-              .map((c) => String.fromCharCode(c)) // convert to UTF-16
-              .join("");
+export function contactValidKey({
+  contact,
+  algorithm,
+}: Omit<GenerateKeyPayload, "message">) {
+  console.log("contact", contact, algorithm);
+  return (contact?.keys || []).find((key) => key.type === algorithm);
 }
 
+export const isKeyValid = (key: AlgorithmKey | null | undefined) => {
+  const hour = 1000 * 60 * 60;
+  if (!key || key?.timestamp < Date.now() - hour) {
+    return false;
+  }
+  return true;
+};
+
+export function getCiphertext({
+  algorithm,
+  key,
+  plaintext,
+}: Required<EncryptMessagePayload>): string {
+  switch (algorithm) {
+    case "Caesar cipher":
+      return cc.encrypt({ key, plaintext: asciiToHex(plaintext) });
+    case "Monoalphabetic":
+      return ma.encrypt({ key, plaintext: asciiToHex(plaintext) });
+    case "Polyalphabetic":
+      return pa.encrypt({ key, plaintext });
+    case "Hill cipher":
+      return hc.encrypt({ key, plaintext });
+    case "Playfair":
+      return pf.encrypt({ key, plaintext });
+    case "OTP":
+      return otp.encrypt({ key, plaintext: asciiToHex(plaintext) });
+    case "Rail fence":
+      return rf.encrypt({ key, plaintext });
+    case "Columnar":
+      return plaintext;
+    case "DES":
+      return plaintext;
+    case "AES":
+      return plaintext;
+    case "RC4":
+      return plaintext;
+    case "RSA":
+      return rsa.encrypt({ key, plaintext });
+    case "ECC":
+      return plaintext;
+    default:
+      return plaintext;
+  }
+}
+
+export function getPlaintext({
+  algorithm,
+  message,
+  key,
+}: Required<DecryptMessagePayload>): string {
+  switch (algorithm) {
+    case "Caesar cipher":
+      return cc.decrypt({ key, ciphertext: message });
+    case "Monoalphabetic":
+      return ma.decrypt({ key, ciphertext: message });
+    case "Polyalphabetic":
+      return pa.decrypt({ key, ciphertext: message });
+    case "Hill cipher":
+      return hc.decrypt({ key, ciphertext: message });
+    case "Playfair":
+      return pf.decrypt({ key, ciphertext: message });
+    case "OTP":
+      return otp.decrypt({ key, ciphertext: message });
+    case "Rail fence":
+      return rf.decrypt({ key, ciphertext: message });
+    case "Columnar":
+      return message;
+    case "DES":
+      return message;
+    case "AES":
+      return message;
+    case "RC4":
+      return message;
+    case "RSA":
+      return rsa.decrypt({ key, ciphertext: message });
+    case "ECC":
+      return message;
+    default:
+      return message;
+  }
+}
+
+export function generateKey({
+  algorithm,
+  message,
+}: GenerateKeyPayload): string {
+  switch (algorithm) {
+    case "Caesar cipher":
+      return (Math.floor(Math.random() * 26 + 1) % 26)
+        .toString(16)
+        .padStart(2, "0");
+    case "Monoalphabetic":
+      return ma.generateKey();
+    case "Polyalphabetic":
+      return ""; // pa.generateKey();
+    case "Hill cipher":
+      return ""; // hc.generateKey(message);
+    case "Playfair":
+      const result = window.prompt("Enter a key for Playfair cipher");
+      if (!result) return pf.generateKey({ message: "crypto" });
+      return pf.generateKey({ message: result });
+    case "OTP":
+      return otp.generateKey({ message });
+    case "Rail fence":
+      return ""; // generateRailFenceKey(message);
+    case "Columnar":
+      return ""; // generateColumnarKey(message);
+    case "DES":
+      return ""; // generateDESKey(message);
+    case "AES":
+      return ""; // generateAESKey(message);
+    case "RC4":
+      return ""; // generateRC4Key(message);
+    case "RSA":
+      return rsa.generateKeys();
+    case "ECC":
+      return ""; // generateECCKey(message);
+    default:
+      throw new Error("Algorithm not found");
+  }
+}

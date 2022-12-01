@@ -6,10 +6,7 @@ type Message<T = MessagePayloadTypes> = {
   payload: T;
 };
 
-type MessagePayloadTypes =
-  | KeyExchangePayload
-  | TextPayload
-  | AlgorithmPSKPayload;
+type MessagePayloadTypes = TextPayload | AlgorithmPSKPayload;
 
 type EncryptionAlgorithm =
   | "Caesar cipher"
@@ -26,15 +23,11 @@ type EncryptionAlgorithm =
   | "RSA"
   | "ECC";
 
-type KeyExchangePayload = {
-  type: "KEY_EXCHANGE";
-  publicKey: string;
-};
-
 type TextPayload = {
   type: "MESSAGE";
   text: string;
   encryption: EncryptionAlgorithm;
+  key?: AlgorithmKey;
 };
 
 type AlgorithmPSKPayload = {
@@ -46,9 +39,22 @@ type AlgorithmPSKPayload = {
 type Contact = {
   id: number;
   name: string;
-  email: string;
+  publicKey: string;
   hasUnreadMessages: boolean;
   canScrollToNewMessages: boolean;
+  keys: AlgorithmKey[];
+};
+
+type AlgorithmKey = {
+  version: number;
+  timestamp: number;
+  value: string;
+  type: EncryptionAlgorithm;
+};
+
+type AddKeyPayload = {
+  contactName: name;
+  key: AlgorithmKey;
 };
 
 type EncryptPayload = {
@@ -61,31 +67,38 @@ type DecryptPayload = {
   key: string;
 };
 
-type RsaEncryptPayload = {
-  plaintext: string;
-  publicKey: bigint[];
+type GenerateKeyPayload = {
+  algorithm?: EncryptionAlgorithm;
+  message: string;
+  contact?: Contact;
 };
 
-type RsaDecryptPayload = {
-  ciphertext: string;
-  privateKey: bigint[];
+type DecryptMessagePayload = {
+  algorithm?: EncryptionAlgorithm;
+  message: string;
+  key?: string;
+};
+
+type EncryptMessagePayload = {
+  algorithm?: EncryptionAlgorithm;
+  plaintext: string;
+  key: string;
 };
 
 type Encrypter = (payload: EncryptPayload) => string;
 
 type Decrypter = (payload: DecryptPayload) => string;
 
-type MonoalphabeticRandomKeyGenerator = () => string;
+type KeyGenerator = (payload: GenerateKeyPayload) => string;
+
+type RandomKeyGenerator = () => string;
+type SessionKeyPair = {
+  privateKey: string;
+  publicKey: string;
+};
 
 type PlayfairKeyMatrixGeneratorPayload = { key: string };
 
-type PlayfairKeyMatrixGenerator = (payload: PlayfairKeyMatrixGeneratorPayload) => string[][];
-
-type RsaEncrypter = (payload: RsaEncryptPayload) => string;
-
-type RsaDecrypter = (payload: RsaDecryptPayload) => string;
-
-type KeyPair = {
-  publicKey: bigint[],
-  privateKey: bigint[]
-}
+type PlayfairKeyMatrixGenerator = (
+  payload: PlayfairKeyMatrixGeneratorPayload
+) => string[][];

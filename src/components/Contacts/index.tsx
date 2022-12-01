@@ -8,7 +8,7 @@ const Contacts = () => {
   return (
     <S.Container>
       {contacts.map((contact) => (
-        <Contact key={contact.name} contact={contact} />
+        <Contact key={contact.id} contact={contact} />
       ))}
     </S.Container>
   );

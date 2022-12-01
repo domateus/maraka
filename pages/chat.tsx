@@ -1,7 +1,7 @@
+import * as rsa from "@cipher/rsa";
 import * as contactsActions from "@context/contacts";
 import * as sessionActions from "@context/session";
 import { setKeys } from "@context/session";
-import { generateRsaKeys } from "@utils";
 import React, { useEffect } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,7 +13,7 @@ import { RootState } from "../src/context/store";
 import * as S from "../styles/pages/chat";
 //"http://fast-chamber-80133.herokuapp.com/"
 
-const socket = io("http://fast-chamber-80133.herokuapp.com/");
+const socket = io("http://localhost:8000/");
 
 const Chat: React.FC = () => {
   const dispatch = useDispatch();
@@ -32,7 +32,7 @@ const Chat: React.FC = () => {
       return;
     } else {
       dispatch(sessionActions.defineName());
-      const { publicKey, privateKey } = generateRsaKeys();
+      const { publicKey, privateKey } = rsa.parseKeys(rsa.generateKeys());
       dispatch(setKeys({ publicKey, privateKey }));
       socket.emit("add", { user, publicKey });
     }

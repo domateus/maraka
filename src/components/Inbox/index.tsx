@@ -1,3 +1,5 @@
+import * as rsa from "@cipher/rsa";
+import { asciiToHex } from "@cipher/utils";
 import ChatInput from "@components/ChatInput";
 import Messages from "@components/Messages";
 import { commandSet, tell } from "@context/command";
@@ -10,11 +12,10 @@ import { push } from "@context/messages";
 import { RootState } from "@context/store";
 import {
   contactValidKey,
-  decryptKey,
-  encryptKey,
   generateKey,
   getCiphertext,
   getPlaintext,
+  isKeyValid,
   uuidv4,
 } from "@utils";
 import { useCallback, useEffect } from "react";
@@ -47,41 +48,91 @@ const Inbox = ({
     if (!socket || !user) return;
     const contact = contacts.find((c) => c.name === userToChat);
     if (!contact) return;
-    const key =
-      contactValidKey({ algorithm: encryption, contact }) ??
-      generateKey({ algorithm: encryption, message: text });
 
-    const ciphertext = getCiphertext({
-      key: key as string,
-      plaintext: text,
-      algorithm: encryption,
-    });
-    const newMessage: Message<TextPayload> = {
+    let key = contactValidKey({ algorithm: encryption, contact });
+
+    let newMessage: Message<Partial<TextPayload>> = {
       id: uuidv4(),
       from: user,
       to: userToChat,
       timestamp: Date.now(),
       payload: {
         type: "MESSAGE",
-        text: ciphertext,
         encryption,
       },
     };
-    if (encryption !== "OTP") {
-      dispatch(
-        updateKey({ contactName: userToChat, key: key as AlgorithmKey })
-      );
-    } else {
-      newMessage.payload.key = encryptKey({
-        message: key as string,
-        publicKey: contact.publicKey,
+
+    if (!isKeyValid(key)) {
+      const newValue = generateKey({ algorithm: encryption, message: text });
+      console.log("piece of shiet", newValue);
+      newMessage = {
+        ...newMessage,
+        payload: {
+          ...newMessage.payload,
+          key: {
+            value: newValue,
+            type: encryption,
+            timestamp: Date.now(),
+            version: key?.version ? key.version + 1 : 1,
+          },
+        },
+      };
+      console.log("new key", newMessage);
+      const ciphertext = getCiphertext({
+        key: newMessage.payload.key!.value,
+        plaintext: text,
+        algorithm: encryption,
       });
+      const encryptedKey = rsa.encrypt({
+        plaintext: newMessage.payload.key!.value,
+        key: contact.publicKey,
+      });
+      newMessage = {
+        ...newMessage,
+        payload: {
+          ...newMessage.payload,
+          text: ciphertext,
+          key: {
+            ...(newMessage.payload!.key as AlgorithmKey),
+            value: encryptedKey,
+          },
+        },
+      };
+      console.log("encrypted key", encryptedKey);
+      if (encryption !== "OTP") {
+        dispatch(
+          updateKey({
+            contactName: userToChat,
+            key: {
+              ...(newMessage.payload!.key as AlgorithmKey),
+              value: newValue,
+            },
+          })
+        );
+      }
+    } else {
+      const ciphertext = getCiphertext({
+        key: key!.value,
+        plaintext: text,
+        algorithm: encryption,
+      });
+      newMessage = {
+        ...newMessage,
+        payload: {
+          ...newMessage.payload,
+          text: ciphertext,
+        },
+      };
     }
+
     console.log("sent the message", newMessage);
     dispatch(
       push({
-        ...newMessage,
-        payload: { ...newMessage.payload, text },
+        ...(newMessage as Message<TextPayload>),
+        payload: {
+          ...(newMessage.payload as TextPayload),
+          text,
+        },
         channel: userToChat,
       })
     );
@@ -92,25 +143,58 @@ const Inbox = ({
     (message: Message<TextPayload>) => {
       const receivedFrom = contacts.find((c) => c.name === message.from);
       if (!receivedFrom) return;
-      const key =
-        message.payload.encryption === "OTP"
-          ? ({
-              timestamp: message.timestamp,
-              value: decryptKey({
-                message: message.payload.key as string,
-                privateKey: keys?.privateKey,
-              }),
-              type: "OTP",
-            } as AlgorithmKey)
-          : contactValidKey({
-              contact: receivedFrom,
-              algorithm: message.payload.encryption,
-            });
+      let key = contactValidKey({
+        contact: receivedFrom,
+        algorithm: message.payload.encryption,
+      });
+
+      console.log("has a key already?", key);
+
+      const refreshKey = () => {
+        const decryptedKey = asciiToHex(
+          rsa.decrypt({
+            ciphertext: message.payload.key!.value,
+            key: keys.privateKey,
+          })
+        );
+        console.log("decrypted key", decryptedKey, message.payload.key!.value);
+        message.payload.key!.value = decryptedKey;
+        if (message.payload.encryption !== "OTP") {
+          dispatch(
+            updateKey({
+              contactName: message.from,
+              key: {
+                ...(message.payload.key as AlgorithmKey),
+                value: decryptedKey,
+              },
+            })
+          );
+        }
+      };
+
+      if (!isKeyValid(key) || message.payload.encryption === "OTP") {
+        refreshKey();
+      } else if (
+        message.payload.key &&
+        key &&
+        (message.payload.key.version > key.version ||
+          message.payload.key.timestamp > key.timestamp)
+      ) {
+        // when timestamps are different, means that both users have different keys
+        // so we will use the one with the latest timestamp
+        refreshKey();
+      }
+
+      console.log(
+        "received message",
+        message.payload.text,
+        asciiToHex(key?.value ?? message!.payload!.key!.value)
+      );
 
       const text = getPlaintext({
         algorithm: message.payload.encryption,
         message: message.payload.text,
-        key: key!.value as string,
+        key: key?.value ?? message!.payload!.key!.value,
       });
 
       dispatch(
@@ -134,8 +218,9 @@ const Inbox = ({
 
   useEffect(() => {
     socket.on("receive-message", (message: Message) => {
-      console.log("received message", message);
       if (message.payload.type === "MESSAGE") {
+        console.log("received message", message.payload.key);
+
         handleTextMessage(message as Message<TextPayload>);
       }
     });

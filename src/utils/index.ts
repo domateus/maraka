@@ -1,4 +1,17 @@
+import * as cc from "@cipher/caesarCipher";
+import * as hc from "@cipher/hillCipher";
+import * as ma from "@cipher/monoalphabetic";
 import * as otp from "@cipher/otp";
+import * as pf from "@cipher/playfair";
+import * as pa from "@cipher/polyalphabetic";
+import * as rf from "@cipher/railFence";
+import * as rsa from "@cipher/rsa";
+import { asciiToHex } from "@cipher/utils";
+// import * as col from "@cipher/columnar";
+// import * as des from "@cipher/des";
+// import * as aes from "@cipher/aes";
+// import * as rc4 from "@cipher/rc4";
+// import * as ecc from "@cipher/ecc";
 
 export function uuidv4() {
   return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
@@ -10,28 +23,21 @@ export function uuidv4() {
   );
 }
 
-export function generateRsaKeys(): SessionKeyPair {
-  const getRandomBigInts = (): string[] =>
-    [...window.crypto.getRandomValues(new Uint16Array(2))].map((n) =>
-      n.toString()
-    );
-  return {
-    publicKey: getRandomBigInts(),
-    privateKey: getRandomBigInts(),
-  };
-}
-
 export function contactValidKey({
   contact,
   algorithm,
 }: Omit<GenerateKeyPayload, "message">) {
-  const key = (contact?.keys || []).find((key) => key.type === algorithm);
+  console.log("contact", contact, algorithm);
+  return (contact?.keys || []).find((key) => key.type === algorithm);
+}
+
+export const isKeyValid = (key: AlgorithmKey | null | undefined) => {
   const hour = 1000 * 60 * 60;
   if (!key || key?.timestamp < Date.now() - hour) {
-    return null;
+    return false;
   }
-  return key;
-}
+  return true;
+};
 
 export function getCiphertext({
   algorithm,
@@ -40,19 +46,19 @@ export function getCiphertext({
 }: Required<EncryptMessagePayload>): string {
   switch (algorithm) {
     case "Caesar cipher":
-      return plaintext;
+      return cc.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "Monoalphabetic":
-      return plaintext;
+      return ma.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "Polyalphabetic":
-      return plaintext;
+      return pa.encrypt({ key, plaintext });
     case "Hill cipher":
-      return plaintext;
+      return hc.encrypt({ key, plaintext });
     case "Playfair":
-      return plaintext;
+      return pf.encrypt({ key, plaintext });
     case "OTP":
-      return otp.encrypt({ key, plaintext });
+      return otp.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "Rail fence":
-      return plaintext;
+      return rf.encrypt({ key, plaintext });
     case "Columnar":
       return plaintext;
     case "DES":
@@ -62,7 +68,7 @@ export function getCiphertext({
     case "RC4":
       return plaintext;
     case "RSA":
-      return plaintext;
+      return rsa.encrypt({ key, plaintext });
     case "ECC":
       return plaintext;
     default:
@@ -77,19 +83,19 @@ export function getPlaintext({
 }: Required<DecryptMessagePayload>): string {
   switch (algorithm) {
     case "Caesar cipher":
-      return message;
+      return cc.decrypt({ key, ciphertext: message });
     case "Monoalphabetic":
-      return message;
+      return ma.decrypt({ key, ciphertext: message });
     case "Polyalphabetic":
-      return message;
+      return pa.decrypt({ key, ciphertext: message });
     case "Hill cipher":
-      return message;
+      return hc.decrypt({ key, ciphertext: message });
     case "Playfair":
-      return message;
+      return pf.decrypt({ key, ciphertext: message });
     case "OTP":
       return otp.decrypt({ key, ciphertext: message });
     case "Rail fence":
-      return message;
+      return rf.decrypt({ key, ciphertext: message });
     case "Columnar":
       return message;
     case "DES":
@@ -99,7 +105,7 @@ export function getPlaintext({
     case "RC4":
       return message;
     case "RSA":
-      return message;
+      return rsa.decrypt({ key, ciphertext: message });
     case "ECC":
       return message;
     default:
@@ -107,111 +113,42 @@ export function getPlaintext({
   }
 }
 
-export function generateKey({ algorithm, message }: GenerateKeyPayload) {
+export function generateKey({
+  algorithm,
+  message,
+}: GenerateKeyPayload): string {
   switch (algorithm) {
     case "Caesar cipher":
-      return generateCaesarCipherKey(message);
+      return (Math.floor(Math.random() * 26 + 1) % 26)
+        .toString(16)
+        .padStart(2, "0");
     case "Monoalphabetic":
-      return generateMonoalphabeticKey(message);
+      return ma.generateKey();
     case "Polyalphabetic":
-      return generateMonoalphabeticKey(message);
+      return ""; // pa.generateKey();
     case "Hill cipher":
-      return generateHillCipherKey(message);
+      return ""; // hc.generateKey(message);
     case "Playfair":
-      return generatePlayfairKey(message);
+      const result = window.prompt("Enter a key for Playfair cipher");
+      if (!result) return pf.generateKey({ message: "crypto" });
+      return pf.generateKey({ message: result });
     case "OTP":
-      return generateOTPKey(message);
+      return otp.generateKey({ message });
     case "Rail fence":
-      return generateRailFenceKey(message);
+      return ""; // generateRailFenceKey(message);
     case "Columnar":
-      return generateColumnarKey(message);
+      return ""; // generateColumnarKey(message);
     case "DES":
-      return generateDESKey(message);
+      return ""; // generateDESKey(message);
     case "AES":
-      return generateAESKey(message);
+      return ""; // generateAESKey(message);
     case "RC4":
-      return generateRC4Key(message);
+      return ""; // generateRC4Key(message);
     case "RSA":
-      return generateRSAKey(message);
+      return rsa.generateKeys();
     case "ECC":
-      return generateECCKey(message);
+      return ""; // generateECCKey(message);
     default:
       throw new Error("Algorithm not found");
   }
 }
-
-export function encryptKey({
-  message,
-  publicKey,
-}: {
-  message: string;
-  publicKey: string[];
-}) {
-  return message;
-}
-
-export function decryptKey({
-  message,
-  privateKey,
-}: {
-  message: string;
-  privateKey: string[];
-}) {
-  return message;
-}
-
-function generateCaesarCipherKey(message: string) {
-  throw new Error("Function not implemented.");
-}
-
-function generateMonoalphabeticKey(message: string) {
-  throw new Error("Function not implemented.");
-}
-
-function generateHillCipherKey(message: string) {
-  throw new Error("Function not implemented.");
-}
-
-function generatePlayfairKey(message: string) {
-  throw new Error("Function not implemented.");
-}
-
-function generateOTPKey(message: string) {
-  return otp.generateKey({ message });
-}
-
-function generateRailFenceKey(message: string) {
-  throw new Error("Function not implemented.");
-}
-
-function generateColumnarKey(message: string) {
-  throw new Error("Function not implemented.");
-}
-
-function generateDESKey(message: string) {
-  throw new Error("Function not implemented.");
-}
-
-function generateAESKey(message: string) {
-  throw new Error("Function not implemented.");
-}
-
-function generateRC4Key(message: string) {
-  throw new Error("Function not implemented.");
-}
-
-function generateRSAKey(message: string) {
-  throw new Error("Function not implemented.");
-}
-
-function generateECCKey(message: string) {
-  throw new Error("Function not implemented.");
-}
-// Random Key Generator for Monoalphabetic Cipher to use in the front-end
-export default function monoalphabeticRandomKeyGenerator() {
-  return Array.from(Array(256).keys())            // generate a sequence of integers from 1 to 256
-              .sort(() => Math.random() - 0.5)    // Math.random() used just to randomize the sequence...
-              .map((c) => String.fromCharCode(c)) // convert to UTF-16
-              .join("");
-}
-

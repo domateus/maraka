@@ -14,8 +14,8 @@ const initialState: SessionState = {
   theme: "dark",
   hasDefinedName: false,
   keys: {
-    privateKey: [],
-    publicKey: [],
+    privateKey: "",
+    publicKey: "",
   },
 };
 

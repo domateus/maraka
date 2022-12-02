@@ -4,6 +4,7 @@ import * as polyalphabeticCipher from "@cipher/polyalphabeticCipher"
 import * as hillCipher from "@cipher/hillCipher"
 import * as playfairCipher from "@cipher/playfairCipher"
 import * as railFenceCipher from "@cipher/railFenceCipher"
+import * as desCipher from "@cipher/desCipher"
 import monoalphabeticRandomKeyGenerator from "@utils"
 import { useState } from "react"
 
@@ -155,9 +156,32 @@ const RailFenceCipher = () => {
   )
 }
 
+const DesCipher = () => {
+  const [plaintext, setPlainText] = useState('')
+  let [ciphertext, setCipherText] = useState('')
+  const [key, setKey] = useState('')
+  return (
+    <div>
+      <h2>Data Encryption Standard (DES) Cipher</h2>
+      
+      <h3><strong>KEY:</strong></h3>
+      <input name="key" type="text"value={key} onChange={(e) => setKey(e.target.value)} />
+
+      <h3><strong>PLAINTEXT:</strong></h3>
+      <input type="text" value={plaintext} onChange={e => setPlainText(e.target.value)} />
+
+      <h3><strong>ENCRYPTED:</strong></h3>
+      <p>{ciphertext = desCipher.encrypt({plaintext, key})}</p>
+
+      <h3><strong>DECRYPTED:</strong></h3>
+      <p>{desCipher.decrypt({ciphertext, key})}</p>
+    </div>
+  )
+}
 // export default CaesarCipher
 // export default MonoalphabeticCipher
 // export default PolyalphabeticCipher
 // export default HillCipher
-export default PlayfairCipher
+// export default PlayfairCipher
 // export default RailFenceCipher
+export default DesCipher

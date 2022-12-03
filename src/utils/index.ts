@@ -1,4 +1,6 @@
 import * as cc from "@cipher/caesarCipher";
+import * as col from "@cipher/columnar";
+import * as des from "@cipher/des";
 import * as hc from "@cipher/hillCipher";
 import * as ma from "@cipher/monoalphabetic";
 import * as otp from "@cipher/otp";
@@ -7,8 +9,6 @@ import * as pa from "@cipher/polyalphabetic";
 import * as rf from "@cipher/railFence";
 import * as rsa from "@cipher/rsa";
 import { asciiToHex } from "@cipher/utils";
-// import * as col from "@cipher/columnar";
-// import * as des from "@cipher/des";
 // import * as aes from "@cipher/aes";
 // import * as rc4 from "@cipher/rc4";
 // import * as ecc from "@cipher/ecc";
@@ -28,7 +28,15 @@ export function contactValidKey({
   algorithm,
 }: Omit<GenerateKeyPayload, "message">) {
   console.log("contact", contact, algorithm);
-  return (contact?.keys || []).find((key) => key.type === algorithm);
+  if (algorithm === "RSA") {
+    // for RSA we reuse the public key from the session
+    return {
+      value: contact!.publicKey,
+      version: 1,
+      timestamp: Date.now(),
+      type: algorithm,
+    };
+  } else return (contact?.keys || []).find((key) => key.type === algorithm);
 }
 
 export const isKeyValid = (key: AlgorithmKey | null | undefined) => {
@@ -50,25 +58,25 @@ export function getCiphertext({
     case "Monoalphabetic":
       return ma.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "Polyalphabetic":
-      return pa.encrypt({ key, plaintext });
+      return pa.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "Hill cipher":
-      return hc.encrypt({ key, plaintext });
+      return hc.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "Playfair":
-      return pf.encrypt({ key, plaintext });
+      return pf.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "OTP":
       return otp.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "Rail fence":
-      return rf.encrypt({ key, plaintext });
+      return rf.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "Columnar":
-      return plaintext;
+      return col.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "DES":
-      return plaintext;
+      return des.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "AES":
       return plaintext;
     case "RC4":
       return plaintext;
     case "RSA":
-      return rsa.encrypt({ key, plaintext });
+      return rsa.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "ECC":
       return plaintext;
     default:
@@ -81,6 +89,7 @@ export function getPlaintext({
   message,
   key,
 }: Required<DecryptMessagePayload>): string {
+  console.log("getPlaintext", algorithm, message, key);
   switch (algorithm) {
     case "Caesar cipher":
       return cc.decrypt({ key, ciphertext: message });
@@ -97,9 +106,9 @@ export function getPlaintext({
     case "Rail fence":
       return rf.decrypt({ key, ciphertext: message });
     case "Columnar":
-      return message;
+      return col.decrypt({ key, ciphertext: message });
     case "DES":
-      return message;
+      return des.decrypt({ key, ciphertext: message });
     case "AES":
       return message;
     case "RC4":
@@ -125,29 +134,31 @@ export function generateKey({
     case "Monoalphabetic":
       return ma.generateKey();
     case "Polyalphabetic":
-      return ""; // pa.generateKey();
+      return pa.generateKey();
     case "Hill cipher":
-      return ""; // hc.generateKey(message);
+      return hc.generateKey();
     case "Playfair":
-      const result = window.prompt("Enter a key for Playfair cipher");
-      if (!result) return pf.generateKey({ message: "crypto" });
-      return pf.generateKey({ message: result });
+      const pfKey = window.prompt("Enter a key for Playfair cipher");
+      if (!pfKey) return pf.generateKey({ message: "crypto" });
+      return pf.generateKey({ message: pfKey });
     case "OTP":
       return otp.generateKey({ message });
     case "Rail fence":
-      return ""; // generateRailFenceKey(message);
+      return rf.generateKey();
     case "Columnar":
-      return ""; // generateColumnarKey(message);
+      const colKey = window.prompt("Enter a key for columnar cipher");
+      if (!colKey) return asciiToHex("crypto");
+      return asciiToHex(colKey);
     case "DES":
-      return ""; // generateDESKey(message);
+      return des.generateKey();
     case "AES":
-      return ""; // generateAESKey(message);
+      return "";
     case "RC4":
-      return ""; // generateRC4Key(message);
+      return "";
     case "RSA":
       return rsa.generateKeys();
     case "ECC":
-      return ""; // generateECCKey(message);
+      return "";
     default:
       throw new Error("Algorithm not found");
   }

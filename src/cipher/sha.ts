@@ -97,7 +97,6 @@ class Int64 {
     }
     const high = parseInt(bits.slice(0, 32), 2);
     const low = parseInt(bits.slice(32, 64), 2);
-    console.log("hey", bits, high, low);
     return new Int64(high, low);
   }
 

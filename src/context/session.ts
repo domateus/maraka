@@ -5,7 +5,11 @@ export interface SessionState {
   userToChat: string;
   theme: "light" | "dark";
   hasDefinedName: boolean;
-  keys: SessionKeyPair;
+  rsa: {
+    publicKey: string;
+    privateKey: string;
+  };
+  psk: SessionKeyPair;
 }
 
 const initialState: SessionState = {
@@ -13,10 +17,11 @@ const initialState: SessionState = {
   userToChat: "",
   theme: "dark",
   hasDefinedName: false,
-  keys: {
-    privateKey: "",
+  rsa: {
     publicKey: "",
+    privateKey: "",
   },
+  psk: { p: "", q: "", a: "" },
 };
 
 const sessionSlice = createSlice({
@@ -35,13 +40,28 @@ const sessionSlice = createSlice({
     defineName: (state) => {
       state.hasDefinedName = true;
     },
-    setKeys: (state, action: PayloadAction<SessionKeyPair>) => {
-      state.keys = action.payload;
+    setPrimes: (state, action: PayloadAction<SessionKeyPair>) => {
+      state.psk = action.payload;
+    },
+    setRsa: (
+      state,
+      action: PayloadAction<{
+        publicKey: string;
+        privateKey: string;
+      }>
+    ) => {
+      state.rsa = action.payload;
     },
   },
 });
 
-export const { setUser, setUserToChat, toggleTheme, defineName, setKeys } =
-  sessionSlice.actions;
+export const {
+  setUser,
+  setUserToChat,
+  toggleTheme,
+  defineName,
+  setPrimes,
+  setRsa,
+} = sessionSlice.actions;
 
 export default sessionSlice.reducer;

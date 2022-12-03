@@ -1,7 +1,7 @@
+import * as dh from "@cipher/diffieHellman";
 import * as rsa from "@cipher/rsa";
 import * as contactsActions from "@context/contacts";
 import * as sessionActions from "@context/session";
-import { setKeys } from "@context/session";
 import React, { useEffect } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,6 +23,8 @@ const Chat: React.FC = () => {
   );
   const { contacts } = useSelector((state: RootState) => state.contacts);
 
+  console.log("contacts", contacts);
+
   const pickName = () => {
     if (contacts.find((c) => c.name === user)) {
       alert("Name already taken");
@@ -33,12 +35,17 @@ const Chat: React.FC = () => {
     } else {
       dispatch(sessionActions.defineName());
       const { publicKey, privateKey } = rsa.parseKeys(rsa.generateKeys());
-      dispatch(setKeys({ publicKey, privateKey }));
+      dispatch(sessionActions.setRsa({ publicKey, privateKey }));
+
       socket.emit("add", { user, publicKey });
     }
   };
 
   useEffect(() => {
+    socket.on("dhpsk", ({ p, q }) => {
+      console.log("dhpsk", p, "and", q);
+      dispatch(sessionActions.setPrimes({ p, q, a: dh.secretKey() }));
+    });
     socket.on("users", (users) => {
       console.log("users", users);
       dispatch(contactsActions.set(users));
@@ -58,6 +65,7 @@ const Chat: React.FC = () => {
       socket.off("new-user");
       socket.off("user-disconnected");
       socket.off("disconnect");
+      socket.off("dhpsk");
     };
   }, [dispatch, user, hasDefinedName]);
 
@@ -92,7 +100,7 @@ const Chat: React.FC = () => {
         <ThemeToggler />
       </S.Header>
       <S.Chat>
-        <Contacts />
+        <Contacts socket={socket} />
         <Inbox socket={socket} />
       </S.Chat>
     </S.Container>

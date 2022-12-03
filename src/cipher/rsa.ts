@@ -25,13 +25,11 @@ export const generateKeys: RandomKeyGenerator = () => {
   while (prime1 === prime2) {
     prime2 = utils.getRandomPrime();
   }
-  console.log("primes: ", prime1, prime2);
   //calculating n
   const n = prime1 * prime2;
 
   //calculating totient(n)
   const totient: bigint = (prime1 - 1n) * (prime2 - 1n);
-  console.log("totient: ", totient);
 
   //calculating e
   const e = generateE(totient);
@@ -54,7 +52,6 @@ export const generateKeys: RandomKeyGenerator = () => {
       )
     )
     .join("");
-  console.log(result);
   return result;
 };
 
@@ -65,17 +62,10 @@ export const parseKeys = (key: string) => ({
 
 export const encrypt: Encrypter = ({ plaintext, key }) => {
   //get the parts of public key for encryption
-  console.log("ahoy", key, plaintext);
   const [e, n] = utils.hexToXByteBigIntegerArray(key, 4);
-  console.log("e: ", e.toString(10));
-  console.log("n: ", n.toString(10));
   return utils
     .hexToXByteBigIntegerArray(plaintext, 1)
     .map((base) => {
-      console.log(
-        base.toString(10),
-        utils.bigIntegerToXBytePaddedHex(base.modPow(e, n), 4)
-      );
       return utils.bigIntegerToXBytePaddedHex(base.modPow(e, n), 4);
     })
     .join("");
@@ -83,7 +73,6 @@ export const encrypt: Encrypter = ({ plaintext, key }) => {
 
 export const decrypt: Decrypter = ({ ciphertext, key }) => {
   //get the parts of private key for decryption
-  console.log("ahoy", key, ciphertext);
   const [d, n] = utils.hexToXByteBigIntegerArray(key, 4);
 
   return utils

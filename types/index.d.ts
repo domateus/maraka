@@ -4,9 +4,11 @@ type Message<T = MessagePayloadTypes> = {
   to: string;
   timestamp: number;
   payload: T;
+  hash?: string;
+  hashVerified?: boolean;
 };
 
-type MessagePayloadTypes = TextPayload | AlgorithmPSKPayload;
+type MessagePayloadTypes = TextPayload | DHPSKPayload;
 
 type EncryptionAlgorithm =
   | "Caesar cipher"
@@ -30,19 +32,20 @@ type TextPayload = {
   key?: AlgorithmKey;
 };
 
-type AlgorithmPSKPayload = {
-  type: "ALGORITHM_PSK";
-  encryption: EncryptionAlgorithm;
-  psk: string;
+type DHPSKPayload = {
+  type: "DHPSK";
+  A?: string;
+  B?: string;
 };
 
 type Contact = {
   id: number;
   name: string;
-  publicKey: string;
   hasUnreadMessages: boolean;
   canScrollToNewMessages: boolean;
   keys: AlgorithmKey[];
+  publicKey: string;
+  dhk?: string;
 };
 
 type AlgorithmKey = {
@@ -86,7 +89,7 @@ type EncryptMessagePayload = {
 };
 
 type AsyncRandomKeyGenerator = () => Promise<string[]>;
-type DHModPowPayload = {b: string, e: string, p: string}
+type DHModPowPayload = { b: string; e: string; p: string };
 type DHModPow = (payload: DHModPowPayload) => string;
 
 type Encrypter = (payload: EncryptPayload) => string;
@@ -97,16 +100,17 @@ type KeyGenerator = (payload: GenerateKeyPayload) => string;
 
 type RandomKeyGenerator = () => string;
 type SessionKeyPair = {
-  privateKey: string;
-  publicKey: string;
+  p: string;
+  q: string;
+  a: string;
 };
 
 type PlayfairKeyMatrixGeneratorPayload = { key: string };
 
 type KeyPair = {
-  publicKey: bigint[],
-  privateKey: bigint[]
-}
+  publicKey: bigint[];
+  privateKey: bigint[];
+};
 
 type ColumnarKeyGeneratorPayload = { key: string };
 

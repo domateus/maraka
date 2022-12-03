@@ -1,4 +1,6 @@
-import * as rsa from "@cipher/rsa";
+import { dh } from "@cipher/diffieHellman";
+import * as RSA from "@cipher/rsa";
+import { sha512 } from "@cipher/sha";
 import { asciiToHex } from "@cipher/utils";
 import ChatInput from "@components/ChatInput";
 import Messages from "@components/Messages";
@@ -6,6 +8,7 @@ import { commandSet, tell } from "@context/command";
 import {
   canScrollToNewMessages,
   gotUnreadMessages,
+  setDHK,
   updateKey,
 } from "@context/contacts";
 import { push } from "@context/messages";
@@ -32,7 +35,7 @@ const Inbox = ({
 }) => {
   const dispatch = useDispatch();
 
-  const { user, userToChat, keys } = useSelector(
+  const { user, userToChat, psk, rsa } = useSelector(
     (state: RootState) => state.session
   );
   const { contacts } = useSelector((state: RootState) => state.contacts);
@@ -83,7 +86,8 @@ const Inbox = ({
         plaintext: text,
         algorithm: encryption,
       });
-      const encryptedKey = rsa.encrypt({
+      console.log("ciphertext", ciphertext);
+      const encryptedKey = RSA.encrypt({
         plaintext: newMessage.payload.key!.value,
         key: contact.publicKey,
       });
@@ -125,6 +129,8 @@ const Inbox = ({
       };
     }
 
+    newMessage.hash = sha512(asciiToHex(JSON.stringify(newMessage)));
+
     console.log("sent the message", newMessage);
     dispatch(
       push({
@@ -143,6 +149,14 @@ const Inbox = ({
     (message: Message<TextPayload>) => {
       const receivedFrom = contacts.find((c) => c.name === message.from);
       if (!receivedFrom) return;
+
+      const cloneMessage = { ...message };
+      delete cloneMessage.hash;
+
+      const hash = sha512(asciiToHex(JSON.stringify(cloneMessage)));
+
+      message.hashVerified = message.hash === hash;
+
       let key = contactValidKey({
         contact: receivedFrom,
         algorithm: message.payload.encryption,
@@ -152,9 +166,9 @@ const Inbox = ({
 
       const refreshKey = () => {
         const decryptedKey = asciiToHex(
-          rsa.decrypt({
+          RSA.decrypt({
             ciphertext: message.payload.key!.value,
-            key: keys.privateKey,
+            key: rsa.privateKey,
           })
         );
         console.log("decrypted key", decryptedKey, message.payload.key!.value);
@@ -185,16 +199,13 @@ const Inbox = ({
         refreshKey();
       }
 
-      console.log(
-        "received message",
-        message.payload.text,
-        asciiToHex(key?.value ?? message!.payload!.key!.value)
-      );
-
       const text = getPlaintext({
         algorithm: message.payload.encryption,
         message: message.payload.text,
-        key: key?.value ?? message!.payload!.key!.value,
+        key:
+          ((key?.value && message.payload.encryption) === "RSA"
+            ? rsa.privateKey
+            : key?.value) ?? message!.payload!.key!.value,
       });
 
       dispatch(
@@ -213,21 +224,46 @@ const Inbox = ({
         dispatch(canScrollToNewMessages(message.from));
       }
     },
-    [contacts, dispatch, userToChat]
+    [contacts, dispatch, rsa.privateKey, userToChat]
+  );
+
+  const handleDHPSK = useCallback(
+    (message: Message<DHPSKPayload>) => {
+      console.log("received DHPSK", message);
+      if (message.payload.A) {
+        socket.emit("send-message", {
+          id: uuidv4(),
+          from: user,
+          to: message.from,
+          timestamp: Date.now(),
+          payload: {
+            type: "DHPSK",
+            B: dh({ p: psk.p, e: psk.a, b: psk.q }),
+          },
+        });
+
+        const dhk = dh({ p: psk.p, e: psk.a, b: message.payload.A });
+        dispatch(setDHK({ dhk, name: message.from }));
+      } else if (message.payload.B) {
+        const dhk = dh({ p: psk.p, e: psk.a, b: message.payload.B });
+        dispatch(setDHK({ dhk, name: message.from }));
+      }
+    },
+    [dispatch, psk.a, psk.p, psk.q, socket, user]
   );
 
   useEffect(() => {
     socket.on("receive-message", (message: Message) => {
       if (message.payload.type === "MESSAGE") {
-        console.log("received message", message.payload.key);
-
         handleTextMessage(message as Message<TextPayload>);
+      } else if (message.payload.type === "DHPSK") {
+        handleDHPSK(message as Message<DHPSKPayload>);
       }
     });
     return () => {
       socket.off("receive-message");
     };
-  }, [socket, handleTextMessage]);
+  }, [socket, handleTextMessage, handleDHPSK]);
 
   if (!userToChat && !contacts.find((u) => u.name === userToChat))
     return <div></div>;

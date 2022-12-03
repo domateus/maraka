@@ -6,14 +6,10 @@ import { asciiToHex, hexToAscii } from "./utils";
 // Encryption
 export const encrypt: Encrypter = ({ plaintext, key }) => {
   const parsedKey = hexToAscii(key);
-  console.log("HIHIHI", plaintext, hexToAscii(plaintext));
-  console.log("MONO encryption key", parsedKey.length, parsedKey);
-
   return asciiToHex(
     hexToAscii(plaintext)
       .split("")
       .map((c) => {
-        console.log("bulgogi", c.charCodeAt(0));
         return String.fromCharCode(parsedKey[c.charCodeAt(0)].charCodeAt(0));
       })
       .join("")
@@ -23,7 +19,6 @@ export const encrypt: Encrypter = ({ plaintext, key }) => {
 // Decryption
 export const decrypt: Decrypter = ({ ciphertext, key }) => {
   const parsedKey = hexToAscii(key);
-  console.log("MONO decription key", parsedKey, key);
   return hexToAscii(ciphertext)
     .split("")
     .map((c) =>

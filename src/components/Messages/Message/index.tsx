@@ -66,11 +66,25 @@ const TextMessage: React.FC<{
         >
           <b>encryption: </b>
           <span>{message.payload.encryption}</span>
+          {message.from !== user && (
+            <>
+              <br />
+              <b>hash match: </b>
+              <span>{message.hashVerified ? "true" : "false"}</span>
+            </>
+          )}
           <S.xPadding size={0.1} />
         </ReactTooltip>
       </>
     ),
-    [message.id, message.payload.encryption, theme]
+    [
+      message.from,
+      message.hashVerified,
+      message.id,
+      message.payload.encryption,
+      theme,
+      user,
+    ]
   );
 
   return (

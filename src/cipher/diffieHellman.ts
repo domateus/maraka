@@ -1,7 +1,7 @@
 import {
   bigIntegerToXBytePaddedHex,
   generatePrime,
-  hexToXByteBigIntegerArray
+  hexToXByteBigIntegerArray,
 } from "./utils";
 
 const bytes = 16;
@@ -20,12 +20,14 @@ export const psk: AsyncRandomKeyGenerator = async () => {
 };
 
 export const secretKey = () => {
-  return Array.from(window.crypto.getRandomValues(new Uint32Array(16))).map(v => v.toString(16)).join("");
-}
+  return Array.from(window.crypto.getRandomValues(new Uint32Array(16)))
+    .map((v) => v.toString(16))
+    .join("");
+};
 
-export const dh: DHModPow = ({b, e, p}) => {
+export const dh: DHModPow = ({ b, e, p }) => {
   const base = hexToXByteBigIntegerArray(b, bytes)[0];
   const exponent = hexToXByteBigIntegerArray(e, bytes)[0];
   const modulus = hexToXByteBigIntegerArray(p, bytes)[0];
   return bigIntegerToXBytePaddedHex(base.modPow(exponent, modulus), bytes);
-}
+};

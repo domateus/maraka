@@ -42,6 +42,11 @@ export const contactsSlice = createSlice({
         u.name === action.payload ? { ...u, canScrollToNewMessages: false } : u
       );
     },
+    setDHK: (state, action: PayloadAction<{ name: string; dhk: string }>) => {
+      state.contacts = state.contacts.map((u) =>
+        u.name === action.payload.name ? { ...u, dhk: action.payload.dhk } : u
+      );
+    },
     updateKey: (state, action: PayloadAction<AddKeyPayload>) => {
       const contact = state.contacts.find(
         (u) => u.name === action.payload.contactName
@@ -70,6 +75,7 @@ export const {
   gotUnreadMessages,
   readMessages,
   canScrollToNewMessages,
+  setDHK,
   noMessagesToScrollTo,
   updateKey,
   addKey,

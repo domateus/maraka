@@ -32,7 +32,10 @@ type SendMessagePayload = {
 const ChatInput: React.FC<{
   sendMessage: (payload: SendMessagePayload) => void;
 }> = ({ sendMessage }) => {
-  const { theme } = useSelector((state: RootState) => state.session);
+  const { theme, userToChat } = useSelector(
+    (state: RootState) => state.session
+  );
+  const { contacts } = useSelector((state: RootState) => state.contacts);
 
   const [text, setText] = useState("");
   const [encryption, setEncryption] = useState<EncryptionAlgorithm>("OTP");
@@ -53,6 +56,7 @@ const ChatInput: React.FC<{
   return (
     <S.InputContainer>
       <S.Input
+        disabled={!contacts.find((c) => c.name === userToChat)?.dhk}
         type="text"
         value={text}
         onKeyDown={handleKeyDown}

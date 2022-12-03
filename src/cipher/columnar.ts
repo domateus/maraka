@@ -7,18 +7,14 @@ export const genColumnarKey: ColumnarKeyGenerator = ({ key }) => {
   // Cleaning up key (numbers only, no repetitions)
   key = key.toUpperCase().replace(/[^0-9]/g, "");
   // Removing duplicated numbers from key
-  key = key
+  return key
     .split("")
-    .filter((item, pos, self) => self.indexOf(item) == pos)
-    .join("");
-  // Convert key to array of numbers and correct index to zero-based
-  const keyOrder = key.split("").map((c) => parseInt(c) - 1);
-  return keyOrder;
+    .filter((item, pos, self) => self.indexOf(item) === pos)
+    .map((c) => parseInt(c));
 };
 
 // Encryption
 export const encrypt: Encrypter = ({ plaintext, key }) => {
-  console.log("got here");
   const order: number[] = genColumnarKey({ key: hexToAscii(key) });
 
   // Cleaning up plaintext
@@ -62,7 +58,6 @@ export const decrypt: Decrypter = ({ ciphertext, key }) => {
 
   const parsedText = hexToAscii(ciphertext);
   const order: number[] = genColumnarKey({ key: hexToAscii(key) });
-
   // Calculating the number of rows to pair with key
   const numRows: number = order.length;
   // Calculating the number of cols to split the ciphertext into
@@ -73,7 +68,6 @@ export const decrypt: Decrypter = ({ ciphertext, key }) => {
   for (let i: number = 0; i < numRows; i++) {
     rows.push(parsedText.slice(i * numCols, (i + 1) * numCols));
   }
-
   // Prepare plaintext array
   const plaintext: string[] = [];
   for (let i: number = 0; i < numCols; i++) {
@@ -88,4 +82,15 @@ export const decrypt: Decrypter = ({ ciphertext, key }) => {
   }
 
   return plaintext.join("");
+};
+
+export const generateKey: RandomKeyGenerator = () => {
+  const key = Array.from(Array(9).keys());
+
+  // Shuffle the key
+  for (let i = key.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [key[i], key[j]] = [key[j], key[i]];
+  }
+  return asciiToHex(key.join(""));
 };

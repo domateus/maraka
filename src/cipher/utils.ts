@@ -23,21 +23,24 @@ export function generateRandomString(length: number): string {
       (n % number_ASCII_TABLE_SIZE).toString(16).padStart(2, "0")
     );
   const result = getRandomBigInts().join("");
-  console.log("OTP key", result);
   return result;
 }
 
 export async function generatePrime(bytes: number): Promise<BigInteger> {
-  return await new Promise((resolve, reject) =>{
-    (forge as any).prime.generateProbablePrime(bytes * 8, function(e: any, p: bigint) {
-      if (e) {
-        reject(e);
-      } else {
-        const v = new BigInteger(p.toString(16), 16)
-        
-      resolve(v);
-    }});
-  })
+  return await new Promise((resolve, reject) => {
+    (forge as any).prime.generateProbablePrime(
+      bytes * 8,
+      function (e: any, p: bigint) {
+        if (e) {
+          reject(e);
+        } else {
+          const v = new BigInteger(p.toString(16), 16);
+
+          resolve(v);
+        }
+      }
+    );
+  });
 }
 
 export function gcd(a: bigint, b: bigint): bigint {
@@ -64,7 +67,6 @@ export function getRandomInt(min: number, max: number) {
 export function getRandomPrime() {
   const arrayIndex = getRandomInt(0, LIST_PRIMES.length - 1);
   const randomPrime = LIST_PRIMES[arrayIndex];
-  console.log("random prime for e: ", randomPrime);
   return randomPrime;
 }
 
@@ -146,12 +148,4 @@ export function multiplyHexStrings(a: string, b: string) {
   var y = new BigInteger(b, 16);
   var c = x.multiply(y);
   return c.toString(16);
-}
-
-function mulBigInt(a: bigint, b: bigint) {
-  for (let i = 0n; i < b; i++) {
-    a += a;
-  }
-  console.log("mulBigInt: ", a);
-  return a;
 }

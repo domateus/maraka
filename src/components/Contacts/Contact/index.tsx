@@ -33,7 +33,6 @@ const Contact: React.FC<{
               A: dh({ p: psk.p, b: psk.q, e: psk.a }),
             },
           };
-          console.log("keyExchange", keyExchange);
           socket.emit("send-message", keyExchange);
         }
         dispatch(setUserToChat(contact.name));

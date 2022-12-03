@@ -67,7 +67,6 @@ const Inbox = ({
 
     if (!isKeyValid(key)) {
       const newValue = generateKey({ algorithm: encryption, message: text });
-      console.log("piece of shiet", newValue);
       newMessage = {
         ...newMessage,
         payload: {
@@ -80,13 +79,11 @@ const Inbox = ({
           },
         },
       };
-      console.log("new key", newMessage);
       const ciphertext = getCiphertext({
         key: newMessage.payload.key!.value,
         plaintext: text,
         algorithm: encryption,
       });
-      console.log("ciphertext", ciphertext);
       const encryptedKey = RSA.encrypt({
         plaintext: newMessage.payload.key!.value,
         key: contact.publicKey,
@@ -102,7 +99,6 @@ const Inbox = ({
           },
         },
       };
-      console.log("encrypted key", encryptedKey);
       if (encryption !== "OTP") {
         dispatch(
           updateKey({
@@ -131,7 +127,6 @@ const Inbox = ({
 
     newMessage.hash = sha512(asciiToHex(JSON.stringify(newMessage)));
 
-    console.log("sent the message", newMessage);
     dispatch(
       push({
         ...(newMessage as Message<TextPayload>),
@@ -162,8 +157,6 @@ const Inbox = ({
         algorithm: message.payload.encryption,
       });
 
-      console.log("has a key already?", key);
-
       const refreshKey = () => {
         const decryptedKey = asciiToHex(
           RSA.decrypt({
@@ -171,7 +164,6 @@ const Inbox = ({
             key: rsa.privateKey,
           })
         );
-        console.log("decrypted key", decryptedKey, message.payload.key!.value);
         message.payload.key!.value = decryptedKey;
         if (message.payload.encryption !== "OTP") {
           dispatch(
@@ -229,7 +221,6 @@ const Inbox = ({
 
   const handleDHPSK = useCallback(
     (message: Message<DHPSKPayload>) => {
-      console.log("received DHPSK", message);
       if (message.payload.A) {
         socket.emit("send-message", {
           id: uuidv4(),

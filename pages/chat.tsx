@@ -13,7 +13,7 @@ import { RootState } from "../src/context/store";
 import * as S from "../styles/pages/chat";
 //"http://fast-chamber-80133.herokuapp.com/"
 
-const socket = io("http://fast-chamber-80133.herokuapp.com/");
+const socket = io("http://localhost:8000/");
 
 const Chat: React.FC = () => {
   const dispatch = useDispatch();
@@ -22,8 +22,6 @@ const Chat: React.FC = () => {
     (state: RootState) => state.session
   );
   const { contacts } = useSelector((state: RootState) => state.contacts);
-
-  console.log("contacts", contacts);
 
   const pickName = () => {
     if (contacts.find((c) => c.name === user)) {
@@ -43,15 +41,12 @@ const Chat: React.FC = () => {
 
   useEffect(() => {
     socket.on("dhpsk", ({ p, q }) => {
-      console.log("dhpsk", p, "and", q);
       dispatch(sessionActions.setPrimes({ p, q, a: dh.secretKey() }));
     });
     socket.on("users", (users) => {
-      console.log("users", users);
       dispatch(contactsActions.set(users));
     });
     socket.on("new-user", (newUser) => {
-      console.log("new user", newUser);
       dispatch(contactsActions.push(newUser));
     });
     socket.on("user-disconnected", (userToRemove) => {

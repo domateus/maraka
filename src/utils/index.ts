@@ -27,7 +27,6 @@ export function contactValidKey({
   contact,
   algorithm,
 }: Omit<GenerateKeyPayload, "message">) {
-  console.log("contact", contact, algorithm);
   if (algorithm === "RSA") {
     // for RSA we reuse the public key from the session
     return {
@@ -89,7 +88,6 @@ export function getPlaintext({
   message,
   key,
 }: Required<DecryptMessagePayload>): string {
-  console.log("getPlaintext", algorithm, message, key);
   switch (algorithm) {
     case "Caesar cipher":
       return cc.decrypt({ key, ciphertext: message });
@@ -146,9 +144,7 @@ export function generateKey({
     case "Rail fence":
       return rf.generateKey();
     case "Columnar":
-      const colKey = window.prompt("Enter a key for columnar cipher");
-      if (!colKey) return asciiToHex("crypto");
-      return asciiToHex(colKey);
+      return col.generateKey();
     case "DES":
       return des.generateKey();
     case "AES":

@@ -9,7 +9,6 @@ const bytes = 16;
 export const psk: AsyncRandomKeyGenerator = async () => {
   const p1 = generatePrime(bytes);
   const p2 = generatePrime(bytes);
-
   let [p, q] = await Promise.all([p1, p2]);
   if (p < q) {
     let temp = p;

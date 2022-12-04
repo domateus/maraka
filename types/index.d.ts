@@ -6,6 +6,8 @@ type Message<T = MessagePayloadTypes> = {
   payload: T;
   hash?: string;
   hashVerified?: boolean;
+  signature?: string[];
+  signatureVerified?: boolean;
 };
 
 type MessagePayloadTypes = TextPayload | DHPSKPayload;
@@ -46,6 +48,7 @@ type Contact = {
   keys: AlgorithmKey[];
   publicKey: string;
   dhk?: string;
+  dsak?: string;
 };
 
 type AlgorithmKey = {
@@ -99,10 +102,17 @@ type Decrypter = (payload: DecryptPayload) => string;
 type KeyGenerator = (payload: GenerateKeyPayload) => string;
 
 type RandomKeyGenerator = () => string;
-type SessionKeyPair = {
+type DHContants = {
   p: string;
   q: string;
   a: string;
+};
+type DSAContants = {
+  p: string;
+  q: string;
+  g: string;
+  x: string;
+  y: string;
 };
 
 type PlayfairKeyMatrixGeneratorPayload = { key: string };

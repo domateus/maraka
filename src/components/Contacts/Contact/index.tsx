@@ -1,4 +1,4 @@
-import { dh } from "@cipher/diffieHellman";
+import * as DH from "@cipher/diffieHellman";
 import { readMessages } from "@context/contacts";
 import { setUserToChat } from "@context/session";
 import { RootState } from "@context/store";
@@ -15,7 +15,7 @@ const Contact: React.FC<{
 }> = ({ contact, socket }) => {
   const dispatch = useDispatch();
 
-  const { userToChat, user, psk } = useSelector(
+  const { userToChat, user, dh } = useSelector(
     (state: RootState) => state.session
   );
 
@@ -23,6 +23,7 @@ const Contact: React.FC<{
     <S.Container
       onClick={() => {
         if (!contact?.dhk) {
+          console.log("Generating DHK", dh);
           const keyExchange: Message<DHPSKPayload> = {
             from: user,
             to: contact.name,
@@ -30,7 +31,7 @@ const Contact: React.FC<{
             timestamp: Date.now(),
             payload: {
               type: "DHPSK",
-              A: dh({ p: psk.p, b: psk.q, e: psk.a }),
+              A: DH.dh({ p: dh.p, b: dh.q, e: dh.a }),
             },
           };
           socket.emit("send-message", keyExchange);

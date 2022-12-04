@@ -8,9 +8,9 @@ import * as otp from "@cipher/otp";
 import * as pf from "@cipher/playfair";
 import * as pa from "@cipher/polyalphabetic";
 import * as rf from "@cipher/railFence";
+import * as rc4 from "@cipher/rc4";
 import * as rsa from "@cipher/rsa";
 import { asciiToHex } from "@cipher/utils";
-// import * as rc4 from "@cipher/rc4";
 // import * as ecc from "@cipher/ecc";
 
 export function uuidv4() {
@@ -82,7 +82,7 @@ export function getCiphertext({
     case "AES":
       return aes.ecbEncryption({ key, plaintext: asciiToHex(plaintext) });
     case "RC4":
-      return plaintext;
+      return rc4.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "RSA":
       return rsa.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "ECC":
@@ -119,7 +119,7 @@ export function getPlaintext({
     case "AES":
       return aes.ecbDecryption({ key, ciphertext: message });
     case "RC4":
-      return message;
+      return rc4.decrypt({ key, ciphertext: message });
     case "RSA":
       return rsa.decrypt({ key, ciphertext: message });
     case "ECC":
@@ -157,7 +157,7 @@ export function generateKey({
     case "DES":
       return des.generateKey();
     case "RC4":
-      return "";
+      return rc4.generateKey();
     case "RSA":
       return rsa.generateKeys();
     case "ECC":

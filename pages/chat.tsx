@@ -23,7 +23,6 @@ const Chat: React.FC = () => {
     (state: RootState) => state.session
   );
   const { contacts } = useSelector((state: RootState) => state.contacts);
-  console.log("contacts", contacts);
   const pickName = () => {
     if (contacts.find((c) => c.name === user)) {
       alert("Name already taken");
@@ -35,7 +34,6 @@ const Chat: React.FC = () => {
       dispatch(sessionActions.defineName());
       const { publicKey, privateKey } = rsa.parseKeys(rsa.generateKeys());
       dispatch(sessionActions.setRsa({ publicKey, privateKey }));
-      console.log("dsak", dsa.y);
       socket.emit("add", { user, publicKey, dsak: dsa.y });
     }
   };
@@ -48,7 +46,6 @@ const Chat: React.FC = () => {
         return;
       }
       hasDSAKeysRef.current = true;
-      console.log("psks", dh, DSA);
       dispatch(
         sessionActions.setDHConstants({ p: dh.p, q: dh.q, a: DH.secretKey() })
       );
@@ -57,10 +54,6 @@ const Chat: React.FC = () => {
         16
       );
       const y = new BigInteger(DSA.g, 16).modPow(x, new BigInteger(DSA.p, 16));
-      console.log("p", new BigInteger(DSA.p, 16).toString());
-      console.log("g", new BigInteger(DSA.g, 16).toString());
-      console.log("y", y.toString());
-      console.log("x", x.toString());
       dispatch(
         sessionActions.setDSAConstants({
           ...DSA,

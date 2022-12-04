@@ -512,7 +512,6 @@ function processInputText(hexString: string) {
 }
 
 export const ecbEncryption: Encrypter = ({ plaintext, key }) => {
-  console.log("ECB Encryption", key);
   if (key.length !== 32) {
     throw new Error("Key length is not 16 Bytes!");
   }
@@ -526,7 +525,6 @@ export const ecbEncryption: Encrypter = ({ plaintext, key }) => {
 };
 
 export const ecbDecryption: Decrypter = ({ ciphertext, key }) => {
-  console.log("ECB Decryption", key);
   if (key.length !== 32) {
     throw new Error("Key length is not 16 Bytes!");
   }

@@ -23,7 +23,6 @@ const Contact: React.FC<{
     <S.Container
       onClick={() => {
         if (!contact?.dhk) {
-          console.log("Generating DHK", dh);
           const keyExchange: Message<DHPSKPayload> = {
             from: user,
             to: contact.name,

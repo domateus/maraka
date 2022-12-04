@@ -31,7 +31,7 @@ export const parseKey = (key: string) =>
 export const encrypt: Encrypter = ({ plaintext, key }) => {
   let keyMatrix: string[][] = parseKey(key);
 
-  let plaintextArray: string[] = plaintext
+  let plaintextArray: string[] = hexToAscii(plaintext)
     .toUpperCase()
     .split("")
     .filter((c) => c.match(/[A-Z]/));
@@ -74,13 +74,13 @@ export const encrypt: Encrypter = ({ plaintext, key }) => {
     }
   }
 
-  return ciphertextArray.join("");
+  return asciiToHex(ciphertextArray.join(""));
 };
 
 // Decryption
 export const decrypt: Decrypter = ({ ciphertext, key }) => {
   if (ciphertext === "") return "";
-
+  ciphertext = hexToAscii(ciphertext);
   let keyMatrix: string[][] = parseKey(key);
 
   let ciphertextArray: string[][] = [];

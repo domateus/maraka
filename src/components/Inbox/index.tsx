@@ -88,14 +88,17 @@ const Inbox = ({
         plaintext: text,
         algorithm: encryption,
       });
+      console.log("ciphertext", ciphertext);
+      console.log("original", text);
 
-      const padding = (32 - newValue.length) % 32;
+      const padding = 32 - (newValue.length % 32);
       const encryptedKey = AES.ecbEncryption({
         plaintext: newMessage.payload.key!.value,
         key: contact.dhk!,
       });
-      console.log("new key", newMessage.payload.key);
-      console.log("encrypted key", encryptedKey);
+      console.log("encryptedKey", encryptedKey);
+      console.log("padding", padding);
+      console.log("key value", newMessage.payload.key!.value);
       newMessage = {
         ...newMessage,
         payload: {
@@ -191,9 +194,8 @@ const Inbox = ({
             key: receivedFrom.dhk!,
           })
         );
-        console.log("decrypted key", decryptedKey);
+        console.log("decryptedKey", decryptedKey);
         if (message.payload.padding) {
-          console.log("padding", message.payload.padding);
           decryptedKey = decryptedKey.slice(0, -message.payload.padding);
         }
         message.payload.key!.value = decryptedKey;
@@ -229,8 +231,6 @@ const Inbox = ({
           : message.payload.encryption === "AES" // if using AES
           ? receivedFrom.dhk!
           : key?.value) ?? message!.payload!.key!.value; // else
-
-      console.log("dexr", decryptionKey);
 
       const text = getPlaintext({
         algorithm: message.payload.encryption,

@@ -1,6 +1,6 @@
+import * as AES from "@cipher/aes";
 import * as DH from "@cipher/diffieHellman";
 import * as DSA from "@cipher/dsa";
-import * as RSA from "@cipher/rsa";
 import { sha512 } from "@cipher/sha";
 import { asciiToHex } from "@cipher/utils";
 import ChatInput from "@components/ChatInput";
@@ -22,7 +22,6 @@ import {
   isKeyValid,
   uuidv4,
 } from "@utils";
-import { BigInteger } from "jsbn";
 import { useCallback, useEffect } from "react";
 import { IoIosArrowDropdown } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
@@ -55,6 +54,9 @@ const Inbox = ({
     if (!contact) return;
 
     let key = contactValidKey({ algorithm: encryption, contact });
+    if (encryption === "AES" && key) {
+      key.value = contact.dhk!;
+    }
 
     let newMessage: Message<Partial<TextPayload>> = {
       id: uuidv4(),
@@ -86,14 +88,19 @@ const Inbox = ({
         plaintext: text,
         algorithm: encryption,
       });
-      const encryptedKey = RSA.encrypt({
+
+      const padding = (32 - newValue.length) % 32;
+      const encryptedKey = AES.ecbEncryption({
         plaintext: newMessage.payload.key!.value,
-        key: contact.publicKey,
+        key: contact.dhk!,
       });
+      console.log("new key", newMessage.payload.key);
+      console.log("encrypted key", encryptedKey);
       newMessage = {
         ...newMessage,
         payload: {
           ...newMessage.payload,
+          padding,
           text: ciphertext,
           key: {
             ...(newMessage.payload!.key as AlgorithmKey),
@@ -136,9 +143,6 @@ const Inbox = ({
       x: dsa.x,
       g: dsa.g,
     });
-    console.log("y is ", new BigInteger(dsa.y, 16).toString());
-    console.log("x is ", new BigInteger(dsa.x, 16).toString());
-    console.log("[r, s]", newMessage.signature);
 
     dispatch(
       push({
@@ -181,12 +185,17 @@ const Inbox = ({
       });
 
       const refreshKey = () => {
-        const decryptedKey = asciiToHex(
-          RSA.decrypt({
+        let decryptedKey = asciiToHex(
+          AES.ecbDecryption({
             ciphertext: message.payload.key!.value,
-            key: rsa.privateKey,
+            key: receivedFrom.dhk!,
           })
         );
+        console.log("decrypted key", decryptedKey);
+        if (message.payload.padding) {
+          console.log("padding", message.payload.padding);
+          decryptedKey = decryptedKey.slice(0, -message.payload.padding);
+        }
         message.payload.key!.value = decryptedKey;
         if (message.payload.encryption !== "OTP") {
           dispatch(
@@ -214,13 +223,19 @@ const Inbox = ({
         refreshKey();
       }
 
+      const decryptionKey =
+        ((key?.value && message.payload.encryption) === "RSA" // if using RSA
+          ? rsa.privateKey
+          : message.payload.encryption === "AES" // if using AES
+          ? receivedFrom.dhk!
+          : key?.value) ?? message!.payload!.key!.value; // else
+
+      console.log("dexr", decryptionKey);
+
       const text = getPlaintext({
         algorithm: message.payload.encryption,
         message: message.payload.text,
-        key:
-          ((key?.value && message.payload.encryption) === "RSA"
-            ? rsa.privateKey
-            : key?.value) ?? message!.payload!.key!.value,
+        key: decryptionKey,
       });
 
       dispatch(

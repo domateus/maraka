@@ -19,7 +19,7 @@ export const psk: AsyncRandomKeyGenerator = async () => {
 };
 
 export const secretKey = () => {
-  return Array.from(window.crypto.getRandomValues(new Uint32Array(16)))
+  return Array.from(window.crypto.getRandomValues(new Uint32Array(4)))
     .map((v) => v.toString(16))
     .join("");
 };

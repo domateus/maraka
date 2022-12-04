@@ -1,3 +1,4 @@
+import * as aes from "@cipher/aes";
 import * as cc from "@cipher/caesarCipher";
 import * as col from "@cipher/columnar";
 import * as des from "@cipher/des";
@@ -9,7 +10,6 @@ import * as pa from "@cipher/polyalphabetic";
 import * as rf from "@cipher/railFence";
 import * as rsa from "@cipher/rsa";
 import { asciiToHex } from "@cipher/utils";
-// import * as aes from "@cipher/aes";
 // import * as rc4 from "@cipher/rc4";
 // import * as ecc from "@cipher/ecc";
 
@@ -27,10 +27,19 @@ export function contactValidKey({
   contact,
   algorithm,
 }: Omit<GenerateKeyPayload, "message">) {
-  if (algorithm === "RSA") {
+  if (algorithm === "OTP") return null;
+  else if (algorithm === "RSA") {
     // for RSA we reuse the public key from the session
     return {
       value: contact!.publicKey,
+      version: 1,
+      timestamp: Date.now(),
+      type: algorithm,
+    };
+  } else if (algorithm === "AES") {
+    // for AES we use Diffie-Hellman to generate a shared secret
+    return {
+      value: "",
       version: 1,
       timestamp: Date.now(),
       type: algorithm,
@@ -71,7 +80,7 @@ export function getCiphertext({
     case "DES":
       return des.encrypt({ key, plaintext: asciiToHex(plaintext) });
     case "AES":
-      return plaintext;
+      return aes.ecbEncryption({ key, plaintext: asciiToHex(plaintext) });
     case "RC4":
       return plaintext;
     case "RSA":
@@ -108,7 +117,7 @@ export function getPlaintext({
     case "DES":
       return des.decrypt({ key, ciphertext: message });
     case "AES":
-      return message;
+      return aes.ecbDecryption({ key, ciphertext: message });
     case "RC4":
       return message;
     case "RSA":
@@ -147,8 +156,6 @@ export function generateKey({
       return col.generateKey();
     case "DES":
       return des.generateKey();
-    case "AES":
-      return "";
     case "RC4":
       return "";
     case "RSA":

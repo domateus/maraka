@@ -32,6 +32,7 @@ type TextPayload = {
   text: string;
   encryption: EncryptionAlgorithm;
   key?: AlgorithmKey;
+  padding?: number;
 };
 
 type DHPSKPayload = {

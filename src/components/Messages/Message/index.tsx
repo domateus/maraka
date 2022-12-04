@@ -71,6 +71,9 @@ const TextMessage: React.FC<{
               <br />
               <b>hash match: </b>
               <span>{message.hashVerified ? "true" : "false"}</span>
+              <br />
+              <b>signature match: </b>
+              <span>{message.signatureVerified ? "true" : "false"}</span>
             </>
           )}
           <S.xPadding size={0.1} />

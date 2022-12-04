@@ -1,4 +1,5 @@
-import { dh } from "@cipher/diffieHellman";
+import * as DH from "@cipher/diffieHellman";
+import * as DSA from "@cipher/dsa";
 import * as RSA from "@cipher/rsa";
 import { sha512 } from "@cipher/sha";
 import { asciiToHex } from "@cipher/utils";
@@ -21,6 +22,7 @@ import {
   isKeyValid,
   uuidv4,
 } from "@utils";
+import { BigInteger } from "jsbn";
 import { useCallback, useEffect } from "react";
 import { IoIosArrowDropdown } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
@@ -35,7 +37,7 @@ const Inbox = ({
 }) => {
   const dispatch = useDispatch();
 
-  const { user, userToChat, psk, rsa } = useSelector(
+  const { user, userToChat, dh, rsa, dsa } = useSelector(
     (state: RootState) => state.session
   );
   const { contacts } = useSelector((state: RootState) => state.contacts);
@@ -126,6 +128,17 @@ const Inbox = ({
     }
 
     newMessage.hash = sha512(asciiToHex(JSON.stringify(newMessage)));
+    newMessage.signature = DSA.sign({
+      m: newMessage.hash,
+      k: window.crypto.getRandomValues(new Uint32Array(1))[0].toString(16),
+      p: dsa.p,
+      q: dsa.q,
+      x: dsa.x,
+      g: dsa.g,
+    });
+    console.log("y is ", new BigInteger(dsa.y, 16).toString());
+    console.log("x is ", new BigInteger(dsa.x, 16).toString());
+    console.log("[r, s]", newMessage.signature);
 
     dispatch(
       push({
@@ -144,11 +157,21 @@ const Inbox = ({
     (message: Message<TextPayload>) => {
       const receivedFrom = contacts.find((c) => c.name === message.from);
       if (!receivedFrom) return;
-
+      const [r, s] = [...message!.signature!];
       const cloneMessage = { ...message };
       delete cloneMessage.hash;
+      delete cloneMessage.signature;
 
       const hash = sha512(asciiToHex(JSON.stringify(cloneMessage)));
+      message.signatureVerified = DSA.verify({
+        m: hash,
+        s,
+        y: receivedFrom.dsak!,
+        p: dsa.p,
+        q: dsa.q,
+        g: dsa.g,
+        r,
+      });
 
       message.hashVerified = message.hash === hash;
 
@@ -229,18 +252,18 @@ const Inbox = ({
           timestamp: Date.now(),
           payload: {
             type: "DHPSK",
-            B: dh({ p: psk.p, e: psk.a, b: psk.q }),
+            B: DH.dh({ p: dh.p, e: dh.a, b: dh.q }),
           },
         });
 
-        const dhk = dh({ p: psk.p, e: psk.a, b: message.payload.A });
+        const dhk = DH.dh({ p: dh.p, e: dh.a, b: message.payload.A });
         dispatch(setDHK({ dhk, name: message.from }));
       } else if (message.payload.B) {
-        const dhk = dh({ p: psk.p, e: psk.a, b: message.payload.B });
+        const dhk = DH.dh({ p: dh.p, e: dh.a, b: message.payload.B });
         dispatch(setDHK({ dhk, name: message.from }));
       }
     },
-    [dispatch, psk.a, psk.p, psk.q, socket, user]
+    [dispatch, dh.a, dh.p, dh.q, socket, user]
   );
 
   useEffect(() => {

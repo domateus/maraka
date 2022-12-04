@@ -1,8 +1,9 @@
-import * as dh from "@cipher/diffieHellman";
+import * as DH from "@cipher/diffieHellman";
 import * as rsa from "@cipher/rsa";
 import * as contactsActions from "@context/contacts";
 import * as sessionActions from "@context/session";
-import React, { useEffect } from "react";
+import { BigInteger } from "jsbn";
+import React, { useEffect, useRef } from "react";
 import { ImSpinner2 } from "react-icons/im";
 import { useDispatch, useSelector } from "react-redux";
 import io from "socket.io-client";
@@ -17,12 +18,12 @@ const socket = io("http://localhost:8000/");
 
 const Chat: React.FC = () => {
   const dispatch = useDispatch();
-
-  const { user, theme, hasDefinedName } = useSelector(
+  const hasDSAKeysRef = useRef(false);
+  const { user, theme, hasDefinedName, dsa } = useSelector(
     (state: RootState) => state.session
   );
   const { contacts } = useSelector((state: RootState) => state.contacts);
-
+  console.log("contacts", contacts);
   const pickName = () => {
     if (contacts.find((c) => c.name === user)) {
       alert("Name already taken");
@@ -34,14 +35,39 @@ const Chat: React.FC = () => {
       dispatch(sessionActions.defineName());
       const { publicKey, privateKey } = rsa.parseKeys(rsa.generateKeys());
       dispatch(sessionActions.setRsa({ publicKey, privateKey }));
-
-      socket.emit("add", { user, publicKey });
+      console.log("dsak", dsa.y);
+      socket.emit("add", { user, publicKey, dsak: dsa.y });
     }
   };
 
   useEffect(() => {
-    socket.on("dhpsk", ({ p, q }) => {
-      dispatch(sessionActions.setPrimes({ p, q, a: dh.secretKey() }));
+    socket.emit("hi");
+
+    socket.on("psks", ({ dh, dsa: DSA }) => {
+      if (hasDSAKeysRef.current) {
+        return;
+      }
+      hasDSAKeysRef.current = true;
+      console.log("psks", dh, DSA);
+      dispatch(
+        sessionActions.setDHConstants({ p: dh.p, q: dh.q, a: DH.secretKey() })
+      );
+      const x = new BigInteger(
+        window.crypto.getRandomValues(new Uint32Array(1))[0].toString(16),
+        16
+      );
+      const y = new BigInteger(DSA.g, 16).modPow(x, new BigInteger(DSA.p, 16));
+      console.log("p", new BigInteger(DSA.p, 16).toString());
+      console.log("g", new BigInteger(DSA.g, 16).toString());
+      console.log("y", y.toString());
+      console.log("x", x.toString());
+      dispatch(
+        sessionActions.setDSAConstants({
+          ...DSA,
+          x: x.toString(16).padStart(256, "0"),
+          y: y.toString(16).padStart(256, "0"),
+        })
+      );
     });
     socket.on("users", (users) => {
       dispatch(contactsActions.set(users));
@@ -69,6 +95,7 @@ const Chat: React.FC = () => {
       <S.Container>
         <h1>Pick your name!</h1>
         <input
+          disabled={!dsa.y}
           autoFocus
           value={user}
           onChange={(e) => dispatch(sessionActions.setUser(e.target.value))}

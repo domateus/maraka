@@ -9,7 +9,8 @@ export interface SessionState {
     publicKey: string;
     privateKey: string;
   };
-  psk: SessionKeyPair;
+  dh: DHContants;
+  dsa: DSAContants;
 }
 
 const initialState: SessionState = {
@@ -21,7 +22,8 @@ const initialState: SessionState = {
     publicKey: "",
     privateKey: "",
   },
-  psk: { p: "", q: "", a: "" },
+  dh: { p: "", q: "", a: "" },
+  dsa: { p: "", q: "", g: "", x: "", y: "" },
 };
 
 const sessionSlice = createSlice({
@@ -40,8 +42,11 @@ const sessionSlice = createSlice({
     defineName: (state) => {
       state.hasDefinedName = true;
     },
-    setPrimes: (state, action: PayloadAction<SessionKeyPair>) => {
-      state.psk = action.payload;
+    setDHConstants: (state, action: PayloadAction<DHContants>) => {
+      state.dh = action.payload;
+    },
+    setDSAConstants: (state, action: PayloadAction<DSAContants>) => {
+      state.dsa = action.payload;
     },
     setRsa: (
       state,
@@ -60,8 +65,9 @@ export const {
   setUserToChat,
   toggleTheme,
   defineName,
-  setPrimes,
+  setDHConstants,
   setRsa,
+  setDSAConstants,
 } = sessionSlice.actions;
 
 export default sessionSlice.reducer;

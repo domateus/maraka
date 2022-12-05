@@ -45,9 +45,11 @@ const Inbox = ({
   const sendMessage = ({
     text,
     encryption,
+    images,
   }: {
     text: string;
     encryption: EncryptionAlgorithm;
+    images: { src: string; id: string }[];
   }) => {
     if (!socket || !user) return;
     const contact = contacts.find((c) => c.name === userToChat);
@@ -67,6 +69,19 @@ const Inbox = ({
         type: "MESSAGE",
         encryption,
       },
+      images: images.map((i) => {
+        const newUrl = AES.ecbEncryption({
+          key: contact.dhk!,
+          plaintext: asciiToHex(i.src),
+        });
+        const padding = i.src.length;
+        console.log("encrypted IMg", newUrl, i);
+        return {
+          id: i.id,
+          src: newUrl,
+          padding,
+        };
+      }),
     };
 
     if (!isKeyValid(key)) {
@@ -154,6 +169,13 @@ const Inbox = ({
           ...(newMessage.payload as TextPayload),
           text,
         },
+        images: images.map((i) => {
+          return {
+            id: i.id,
+            src: i.src,
+            padding: 0,
+          };
+        }),
         channel: userToChat,
       })
     );
@@ -179,8 +201,21 @@ const Inbox = ({
         g: dsa.g,
         r,
       });
-
       message.hashVerified = message.hash === hash;
+      message.images = (message?.images || []).map((i) => {
+        let newUrl = AES.ecbDecryption({
+          key: receivedFrom.dhk!,
+          ciphertext: i.src,
+        });
+        if (i.padding) {
+          newUrl = newUrl.slice(0, i.padding);
+        }
+
+        return {
+          ...i,
+          src: newUrl,
+        };
+      });
 
       let key = contactValidKey({
         contact: receivedFrom,

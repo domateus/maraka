@@ -4,6 +4,11 @@ type Message<T = MessagePayloadTypes> = {
   to: string;
   timestamp: number;
   payload: T;
+  images?: {
+    id: string;
+    src: string;
+    padding: number;
+  }[];
   hash?: string;
   hashVerified?: boolean;
   signature?: string[];

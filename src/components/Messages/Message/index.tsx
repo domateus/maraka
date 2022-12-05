@@ -5,7 +5,7 @@ import {
 } from "@context/contacts";
 import { RootState } from "@context/store";
 import { useObserver } from "@hooks";
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { BsShieldLock } from "react-icons/bs";
 import { useDispatch, useSelector } from "react-redux";
 import ReactTooltip from "react-tooltip";
@@ -23,6 +23,7 @@ const TextMessage: React.FC<{
     onVisible: () => dispatch(canScrollToNewMessages(userToChat)),
     onHidden: () => dispatch(noMessagesToScrollTo(userToChat)),
   });
+  const fileReader = useState(new FileReader());
   const { commands } = useSelector((state: RootState) => state.command);
 
   const messageRef = useRef<HTMLDivElement>(null);
@@ -50,6 +51,8 @@ const TextMessage: React.FC<{
       messageRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }
+
+  console.log(message);
 
   const encryptionInfo = useMemo(
     () => (
@@ -85,6 +88,7 @@ const TextMessage: React.FC<{
       message.hashVerified,
       message.id,
       message.payload.encryption,
+      message.signatureVerified,
       theme,
       user,
     ]
@@ -96,6 +100,13 @@ const TextMessage: React.FC<{
       <S.Message align={message.from === user ? "right" : "left"}>
         <div>{message.from}</div>
         <div>{message.payload.text}</div>
+        {(message?.images || []).length > 0 && (
+          <S.ImagesContainer>
+            {(message?.images || []).map((image) => (
+              <S.Image key={image.id} src={image.src} />
+            ))}
+          </S.ImagesContainer>
+        )}
       </S.Message>
       {align === "left" && encryptionInfo}
     </S.MessageContainer>

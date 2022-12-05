@@ -137,8 +137,8 @@ export function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
 }
 
-export function getRandomPrime() {
-  const arrayIndex = getRandomInt(0, LIST_PRIMES.length - 1);
+export function getRandomPrime(cap = 1) {
+  const arrayIndex = getRandomInt(0, LIST_PRIMES.length - cap);
   const randomPrime = LIST_PRIMES[arrayIndex];
   return randomPrime;
 }

@@ -45,6 +45,32 @@ export const EncryptionButton = styled.button`
   cursor: pointer;
 `;
 
+export const FileButton = styled.button`
+  background-color: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  padding-top: 0.3rem;
+  cursor: pointer;
+  input {
+    position: absolute;
+    top: -99999999px;
+  }
+`;
+
+export const ImagePreview = styled.img`
+  max-width: 30%;
+  max-height: 30%;
+  border-radius: 0.1rem;
+`;
+export const Image = styled.img<{ src: string }>`
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0.1rem;
+  background-image: ${({ src }) => src};
+`;
 export const Buttons = styled.div`
   position: relative;
   display: flex;

@@ -51,3 +51,18 @@ export const Message = styled.div<{ last?: boolean; align: "left" | "right" }>`
 export const xPadding = styled.div<{ size?: number }>`
   margin-bottom: ${({ size }) => (size ? `${size}rem` : "0.5rem")};
 `;
+
+export const ImagesContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem;
+`;
+
+export const Image = styled.img<{ src: string }>`
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0.1rem;
+  background-image: ${({ src }) => src};
+`;
